@@ -1,0 +1,17 @@
+[project]
+name = "pomodoro-analytics"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.12",
+    "pydantic[email]>=2.11.5",
+    "sqlalchemy>=2.0.41",
+    "uvicorn>=0.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
