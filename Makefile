@@ -2,9 +2,18 @@
 
 HOST ?= 0.0.0.0
 PORT ?= 8000
+M ?= migration
 
 run: ## Run the application using uvicorn with provided arguments or defaults
 	poetry run uvicorn src.main:app --host $(HOST) --port $(PORT) --reload
+
+migrate-create: ## Make alembic migrations
+	@echo "Making migrations with message $(M)"
+	alembic revision --autogenerate -m $(M)
+
+migrate: ## Apply latest alembic migration
+	@echo "Migrating"
+	alembic upgrade head
 
 install:  ## Install a dependency using poetry
 	@echo "Installing dependency $(LIBRARY)"

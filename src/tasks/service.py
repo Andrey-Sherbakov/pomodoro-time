@@ -1,41 +1,43 @@
-from src.tasks.exceptions import TaskNotFound
-from src.tasks.models import tasks as fixtures_tasks
-from src.tasks.schemas import DbTask, CreateTask
+from typing import Annotated
 
-ID = 4
+from fastapi import Depends
+
+from src.core.utils import UOWDep
+from src.tasks.models import Task
+from src.tasks.schemas import DbTask, CreateTask
 
 
 class TaskService:
+    def __init__(self, uow: UOWDep) -> None:
+        self.uow = uow
+
     async def get_all(self) -> list[DbTask]:
-        tasks = [DbTask(**task) for task in fixtures_tasks]
-        return tasks
+        tasks = await self.uow.tasks.list()
+        return [DbTask.model_validate(task) for task in tasks]
 
     async def create(self, new_task: CreateTask) -> DbTask:
-        global ID
-        ID += 1
+        task = await self.uow.tasks.add(Task(**new_task.model_dump()))
+        await self.uow.commit()
+        return DbTask.model_validate(task)
 
-        task = DbTask(id=ID, **new_task.model_dump())
-        fixtures_tasks.append(task.model_dump())
+    async def get_by_id(self, task_id: int) -> DbTask:
+        task = await self.uow.tasks.get_by_id_or_404(task_id)
+        return DbTask.model_validate(task)
 
-        return task
+    async def update_by_id(self, task_id: int, updated_task: CreateTask) -> DbTask:
+        task = await self.uow.tasks.get_by_id_or_404(task_id)
+        for key, value in updated_task.model_dump().items():
+            setattr(task, key, value)
+        task = await self.uow.tasks.update(task)
+        await self.uow.commit()
+        return DbTask.model_validate(task)
 
-    async def get_by_id(self, task_id: int) -> dict:
-        for task in fixtures_tasks:
-            if task["id"] == task_id:
-                return task
-        raise TaskNotFound
+    async def delete_by_id(self, task_id: int) -> DbTask:
+        task = await self.uow.tasks.get_by_id_or_404(task_id)
+        deleted_task = DbTask.model_validate(task)
+        await self.uow.tasks.delete(task)
+        await self.uow.commit()
+        return deleted_task
 
-    async def update_by_id(self, task_id: int, updated_task: CreateTask) -> dict:
-        task = await self.get_by_id(task_id)
-        task["name"] = updated_task.name
-        task["pomodoro_count"] = updated_task.pomodoro_count
-        task["category_id"] = updated_task.category_id
-        return task
 
-    async def delete_by_id(self, task_id: int) -> dict:
-        for i, task in enumerate(fixtures_tasks):
-            if task["id"] == task_id:
-                deleted_task = task
-                del fixtures_tasks[i]
-                return deleted_task
-        raise TaskNotFound
+TaskServiceDep = Annotated[TaskService, Depends(TaskService)]

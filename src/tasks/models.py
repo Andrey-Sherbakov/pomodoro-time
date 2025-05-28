@@ -1,37 +1,14 @@
-tasks = [
-    {
-        "id": 1,
-        "name": "task 1",
-        "pomodoro_count": 10,
-        "category_id": 1,
-    },
-    {
-        "id": 2,
-        "name": "task 2",
-        "pomodoro_count": 10,
-        "category_id": 2,
-    },
-    {
-        "id": 3,
-        "name": "task 3",
-        "pomodoro_count": 10,
-        "category_id": 1,
-    },
-    {
-        "id": 4,
-        "name": "task 4",
-        "pomodoro_count": 10,
-        "category_id": 2,
-    },
-]
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-categories = [
-    {
-        "id": 1,
-        "name": "category 1",
-    },
-    {
-        "id": 2,
-        "name": "category 2",
-    },
-]
+from src.core.database import Base
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    pomodoro_count: Mapped[int] = mapped_column(default=10)
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"))
+
+    category: Mapped["Category"] = relationship(back_populates="tasks")

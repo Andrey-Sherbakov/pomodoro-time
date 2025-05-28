@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: pomodoro_psql
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - '5435:5432'
+    volumes:
+      - pomodoro_psql:/var/lib/postgresql/data
+    networks:
+      - pomodoro-net
+
+
+networks:
+  pomodoro-net:
+    driver: bridge
+
+volumes:
+  pomodoro_psql:

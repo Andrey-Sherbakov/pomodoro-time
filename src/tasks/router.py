@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from src.tasks.dependencies import TaskServiceDep
+from src.tasks.service import TaskServiceDep
 from src.tasks.schemas import DbTask, CreateTask
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
