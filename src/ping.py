@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter
+
+from src.core.config import settings
 
 router = APIRouter(prefix="/ping", tags=["ping"])
 
@@ -10,4 +12,4 @@ async def ping_database() -> dict:
 
 @router.get("/app")
 async def ping_app() -> dict:
-    return {"message": "app is working"}
+    return {"message": settings.DATABASE_URL}
