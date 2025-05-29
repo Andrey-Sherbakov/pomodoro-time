@@ -12,3 +12,11 @@ class Task(Base):
     category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"))
 
     category: Mapped["Category"] = relationship(back_populates="tasks")
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+
+    tasks: Mapped[list["Task"]] = relationship(back_populates="category")

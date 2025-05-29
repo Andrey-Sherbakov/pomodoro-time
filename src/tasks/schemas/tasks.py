@@ -1,17 +1,17 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class Task(BaseModel):
+class TaskBase(BaseModel):
     name: str
     pomodoro_count: int | None = None
     category_id: int | None = None
 
 
-class DbTask(Task):
+class TaskDb(TaskBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class CreateTask(Task):
+class TaskCreate(TaskBase):
     pass

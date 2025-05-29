@@ -1,0 +1,56 @@
+from src.core.service import Service
+from src.tasks.models import Task
+from src.tasks.schemas import TaskDb, TaskCreate
+
+
+class TaskService(Service):
+    async def get_all(self) -> list[TaskDb]:
+        cached_tasks = await self.task_cache.get_all_tasks()
+        if cached_tasks is not None:
+            return cached_tasks
+
+        tasks_from_db = await self.task_repo.list()
+        tasks = [TaskDb.model_validate(task) for task in tasks_from_db]
+        await self.task_cache.set_all_tasks(tasks)
+
+        return tasks
+
+    async def create(self, new_task: TaskCreate) -> TaskDb:
+        task = await self.task_repo.add(Task(**new_task.model_dump()))
+
+        await self.session.commit()
+        await self.task_cache.delete_all_tasks()
+
+        return TaskDb.model_validate(task)
+
+    async def get_by_id(self, task_id: int) -> TaskDb:
+        task = await self.task_repo.get_by_id_or_404(task_id)
+        return TaskDb.model_validate(task)
+
+    async def update_by_id(self, task_id: int, updated_task: TaskCreate) -> TaskDb:
+        task = await self.task_repo.get_by_id_or_404(task_id)
+        for key, value in updated_task.model_dump().items():
+            setattr(task, key, value)
+
+        task = await self.task_repo.update(task)
+        await self.session.commit()
+        await self.task_cache.delete_all_tasks()
+
+        return TaskDb.model_validate(task)
+
+    async def delete_by_id(self, task_id: int) -> TaskDb:
+        task = await self.task_repo.get_by_id_or_404(task_id)
+        deleted_task = TaskDb.model_validate(task)
+
+        await self.task_repo.delete(task)
+        await self.session.commit()
+        await self.task_cache.delete_all_tasks()
+
+        return deleted_task
+
+    async def get_tasks_by_category(self, category_id: int) -> list[TaskDb]:
+        category = await self.cat_repo.get_by_id_or_404(category_id)
+
+        tasks = await self.task_repo.get_by_category_id(category.id)
+
+        return [TaskDb.model_validate(task) for task in tasks]
