@@ -1,9 +1,18 @@
-from src.core.service import Service
+from dataclasses import dataclass
+
+from src.core.service import SessionService
+from src.tasks.cache import TaskCache
 from src.tasks.models import Task
+from src.tasks.repository import TaskRepository, CategoryRepository
 from src.tasks.schemas import TaskDb, TaskCreate
 
 
-class TaskService(Service):
+@dataclass
+class TaskService(SessionService):
+    task_repo: TaskRepository
+    task_cache: TaskCache
+    cat_repo: CategoryRepository
+
     async def get_all(self) -> list[TaskDb]:
         cached_tasks = await self.task_cache.get_all_tasks()
         if cached_tasks is not None:

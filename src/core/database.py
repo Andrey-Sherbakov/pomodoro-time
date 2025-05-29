@@ -36,6 +36,21 @@ async def get_redis_connection() -> AsyncGenerator[redis.Redis, None]:
         await redis_connection.aclose()
 
 
+# tokens blacklist redis connection
+async def get_blacklist_connection() -> AsyncGenerator[redis.Redis, None]:
+    blacklist_connection = redis.Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        db=settings.REDIS_BLACKLIST_DB,
+        decode_responses=True,
+    )
+    try:
+        yield blacklist_connection
+    finally:
+        await blacklist_connection.aclose()
+
+
 # dependencies
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
-RedisDep = Annotated[redis.Redis, Depends(get_redis_connection)]
+RedisCacheDep = Annotated[redis.Redis, Depends(get_redis_connection)]
+RedisBlacklistDep = Annotated[redis.Redis, Depends(get_blacklist_connection)]

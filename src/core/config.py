@@ -15,13 +15,14 @@ class Settings(BaseSettings):
     # JWT params
     SECRET_KEY: str
     JWT_ALGORITHM: str
-    ACCESS_TOKEN_EXPIRATION: int
-    REFRESH_TOKEN_EXPIRATION: int
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_DAYS: int
 
     # redis params
     REDIS_HOST: str
     REDIS_PORT: int
     REDIS_DB: int
+    REDIS_BLACKLIST_DB: int
     DEFAULT_CACHE_SECONDS: int
 
     @property
