@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from src.tasks.schemas import CategoryDb, CategoryCreate
-from src.tasks.dependencies import CategoryServiceDep
+from src.tasks.services import CategoryServiceDep
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 

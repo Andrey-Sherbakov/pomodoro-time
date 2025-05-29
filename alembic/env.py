@@ -13,7 +13,7 @@ from alembic import context
 config = context.config
 
 # setting database url from environment
-from src.core.config import settings
+from src.core import settings
 
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
@@ -25,8 +25,8 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 
-from src.categories.models import Category
-from src.tasks.models import Task
+from src.auth import models
+from src.tasks import models
 from src.core.database import Base
 
 target_metadata = Base.metadata

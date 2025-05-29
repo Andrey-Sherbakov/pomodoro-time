@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from src.tasks.schemas import TaskDb, TaskCreate
-from src.tasks.dependencies import TaskServiceDep
+from src.tasks.services import TaskServiceDep
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
