@@ -13,6 +13,15 @@ services:
     networks:
       - pomodoro-net
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis-container
+    ports:
+      - '6378:6379'
+    networks:
+      - pomodoro-net
+    volumes:
+      - pomodoro_redis:/data
 
 networks:
   pomodoro-net:
@@ -20,3 +29,4 @@ networks:
 
 volumes:
   pomodoro_psql:
+  pomodoro_redis:

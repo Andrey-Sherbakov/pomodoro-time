@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRATION: int
     REFRESH_TOKEN_EXPIRATION: int
 
+    # redis params
+    REDIS_HOST: str
+    REDIS_PORT: int
+    REDIS_DB: int
+    DEFAULT_CACHE_SECONDS: int
+
     @property
     def DATABASE_URL(self) -> str:
         return (

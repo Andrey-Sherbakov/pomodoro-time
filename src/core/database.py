@@ -1,10 +1,15 @@
 from typing import AsyncGenerator, Annotated
 
+import redis.asyncio as redis
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from src.core.config import settings
+
+
+class Base(DeclarativeBase):
+    id: Mapped[int] = mapped_column(primary_key=True)
 
 
 # postgresql connection
@@ -20,5 +25,18 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 
 
-class Base(DeclarativeBase):
-    id: Mapped[int] = mapped_column(primary_key=True)
+# redis connection
+async def get_redis_connection() -> AsyncGenerator[redis.Redis, None]:
+    redis_connection = redis.Redis(
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        db=settings.REDIS_DB,
+        decode_responses=True,
+    )
+    try:
+        yield redis_connection
+    finally:
+        await redis_connection.aclose()
+
+
+RedisDep = Annotated[redis.Redis, Depends(get_redis_connection)]

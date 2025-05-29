@@ -48,6 +48,7 @@ class ORMRepository(IRepository[BaseType]):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"There is no {self.model.__name__.lower()} with requested id",
             )
+        return item
 
     async def list(self) -> Sequence[BaseType]:
         stmt = select(self.model)
