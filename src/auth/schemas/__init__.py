@@ -1,9 +1,16 @@
-from src.auth.schemas.user import UserDb, UserCreate
 from src.auth.schemas.auth import (
-    TokenType,
     Tokens,
+    TokenType,
     UserPayload,
     AccessTokenPayload,
     RefreshTokenPayload,
     RefreshToken,
+)
+from src.auth.schemas.users import (
+    UserDb,
+    UserToDb,
+    UserCreate,
+    UserUpdate,
+    PasswordUpdate,
+    PasswordUpdateResponse,
 )

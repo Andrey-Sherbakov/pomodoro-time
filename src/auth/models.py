@@ -9,7 +9,7 @@ class User(Base):
 
     username: Mapped[int] = mapped_column(String(100), index=True, unique=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
-    password: Mapped[str] = mapped_column(String(100))
+    hashed_password: Mapped[str] = mapped_column(String(100))
     full_name: Mapped[str | None] = mapped_column(String(100))
     age: Mapped[int | None]
     is_admin: Mapped[bool] = mapped_column(default=False)

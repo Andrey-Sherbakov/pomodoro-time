@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
-from src.core.service import SessionService
+from src.core import SessionServiceBase
 from src.tasks.models import Category
 from src.tasks.repository import CategoryRepository
 from src.tasks.schemas import CategoryDb, CategoryCreate
 
 
 @dataclass
-class CategoryService(SessionService):
+class CategoryService(SessionServiceBase):
     cat_repo: CategoryRepository
 
     async def get_all(self) -> list[CategoryDb]:

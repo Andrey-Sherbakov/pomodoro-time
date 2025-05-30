@@ -40,8 +40,15 @@ async def get_auth_service(
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 
 
-async def get_user_service(session: SessionDep) -> UserService:
-    return UserService(session=session, user_repo=UserRepository(session=session))
+async def get_user_service(
+    session: SessionDep, security: SecurityServiceDep, token_bl: TokenBLServiceDep
+) -> UserService:
+    return UserService(
+        session=session,
+        user_repo=UserRepository(session=session),
+        token_bl=token_bl,
+        security=security,
+    )
 
 
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]

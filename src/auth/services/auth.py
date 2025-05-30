@@ -13,31 +13,27 @@ from src.auth.exceptions import (
     TokenError,
     TokenRevoked,
 )
-from src.auth.models import User
 from src.auth.repository import UserRepository
 from src.auth.schemas import (
     Tokens,
     TokenType,
-    UserCreate,
-    UserDb,
     RefreshToken,
     UserPayload,
     AccessTokenPayload,
     RefreshTokenPayload,
 )
-from src.core import settings
-from src.core.service import SessionService
+from src.core import settings, SessionServiceBase
 
 
 @dataclass
-class AuthService(SessionService):
+class AuthService(SessionServiceBase):
     user_repo: UserRepository
     token_bl: "TokenBlacklistService"
     security: "SecurityService"
 
     async def login(self, form: OAuth2PasswordRequestForm) -> Tokens:
         user = await self.user_repo.get_by_username(form.username)
-        if not user or not self.security.verify_password(form.password, str(user.password)):
+        if not user or not self.security.verify_password(form.password, str(user.hashed_password)):
             raise AuthenticationError
 
         tokens = self.security.create_tokens(UserPayload.model_validate(user))
@@ -55,23 +51,6 @@ class AuthService(SessionService):
         new_tokens = self.security.create_tokens(UserPayload.model_validate(user))
 
         return new_tokens
-
-    async def register(self, new_user: UserCreate) -> UserDb:
-        new_user.password = self.security.hash_password(new_user.password)
-        user = await self.user_repo.add(User(**new_user.model_dump()))
-
-        await self.commit()
-
-        return UserDb.model_validate(user)
-
-    async def register_superuser(self, new_user: UserCreate) -> UserDb:
-        new_user.password = self.security.hash_password(new_user.password)
-        user = await self.user_repo.add(User(**new_user.model_dump()))
-        user.is_admin = True
-
-        await self.session.commit()
-
-        return UserDb.model_validate(user)
 
     async def logout(self, current_user: UserPayload) -> None:
         await self.token_bl.blacklist_tokens(current_user.jti)

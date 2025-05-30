@@ -1,4 +1,3 @@
-import datetime
 from enum import Enum
 
 from pydantic import BaseModel, EmailStr, ConfigDict
@@ -41,3 +40,7 @@ class RefreshTokenPayload(BaseModel):
 
 class AccessTokenPayload(RefreshTokenPayload, Payload):
     pass
+
+
+class LogoutResponse(BaseModel):
+    detail: str = "Successfully logged out"
