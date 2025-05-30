@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 import jwt
 from fastapi.security import OAuth2PasswordRequestForm
-from passlib.context import CryptContext
 from redis.asyncio import Redis
 
 from src.auth.exceptions import (
@@ -82,20 +81,17 @@ class TokenBlacklistService:
         return ts
 
 
-pwd_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 @dataclass
 class SecurityService:
     token_bl_service: TokenBlacklistService
 
     @staticmethod
     def hash_password(password: str) -> str:
-        return pwd_context.hash(password)
+        return settings.PWD_CONTEXT.hash(password)
 
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(password, hashed_password)
+        return settings.PWD_CONTEXT.verify(password, hashed_password)
 
     @staticmethod
     def get_token_expiration(token_type: TokenType) -> datetime.datetime:

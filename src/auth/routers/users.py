@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 
 import src.auth.dependencies
-from src.auth import CurrentUserDep, UserServiceDep
+from src.auth.dependencies import CurrentUserDep, UserServiceDep
 from src.auth.schemas import UserDb
 
 router = APIRouter(prefix="/users", tags=["users"])
