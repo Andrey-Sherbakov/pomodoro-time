@@ -20,6 +20,5 @@ class Category(Base):
     __tablename__ = "categories"
 
     name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-    type: Mapped[str | None]
 
     tasks: Mapped[list["Task"]] = relationship(back_populates="category")
