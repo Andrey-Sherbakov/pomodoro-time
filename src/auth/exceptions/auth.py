@@ -1,5 +1,7 @@
 from fastapi import HTTPException, status
 
+from src.auth.schemas import Provider
+
 
 class TokenError(HTTPException):
     def __init__(
@@ -49,4 +51,16 @@ class AccessDenied(HTTPException):
         detail: str = "You dont have permission for this action",
         status_code: status = status.HTTP_403_FORBIDDEN,
     ):
+        super().__init__(detail=detail, status_code=status_code)
+
+
+class ProviderError(HTTPException):
+    def __init__(
+        self,
+        provider: Provider | None = None,
+        detail: str = "Unsupported provider",
+        status_code: status = status.HTTP_422_UNPROCESSABLE_ENTITY,
+    ):
+        if provider:
+            detail += f": {provider.value}"
         super().__init__(detail=detail, status_code=status_code)

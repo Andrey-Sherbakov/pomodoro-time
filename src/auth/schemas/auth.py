@@ -31,10 +31,10 @@ class UserPayload(Payload):
 
 
 class RefreshTokenPayload(BaseModel):
-    sub: str
-    jti: str
-    iat: int
-    exp: int
+    sub: str  # user id in JWT format
+    jti: str  # unique id for one token pair
+    iat: int  # when token created
+    exp: int  # when token expire
     type: TokenType
 
 

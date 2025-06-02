@@ -16,7 +16,7 @@ async def create_user(body: UserCreate, service: UserServiceDep) -> UserDb:
     return await service.create_user(body)
 
 
-@router.post("/register_superuser", response_model=UserDb)
+@router.post("/register-superuser", response_model=UserDb)
 async def create_superuser(body: UserCreate, service: UserServiceDep) -> UserDb:
     return await service.create_superuser(body)
 
@@ -28,7 +28,7 @@ async def update_profile(
     return await service.update_user(current_user.id, body)
 
 
-@router.patch("/change_password", response_model=PasswordUpdateResponse)
+@router.patch("/change-password", response_model=PasswordUpdateResponse)
 async def change_password(
     body: PasswordUpdate, service: UserServiceDep, current_user: CurrentUserDep
 ) -> PasswordUpdateResponse:

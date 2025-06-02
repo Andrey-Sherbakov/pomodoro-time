@@ -57,8 +57,8 @@ class TaskService(SessionServiceBase):
 
         return deleted_task
 
-    async def get_tasks_by_category(self, category_id: int) -> list[TaskDb]:
-        category = await self.cat_repo.get_by_id_or_404(category_id)
+    async def get_tasks_by_category(self, cat_id: int) -> list[TaskDb]:
+        category = await self.cat_repo.get_by_id_or_404(cat_id)
 
         tasks = await self.task_repo.get_by_category_id(category.id)
 
