@@ -1,11 +1,14 @@
 .DEFAULT_GOAL := help
 
-HOST ?= 0.0.0.0
+HOST ?= 127.0.0.1
 PORT ?= 8000
 M ?= migration
 
 run: ## Run the application using uvicorn with provided arguments or defaults
-	poetry run uvicorn src.main:app --host $(HOST) --port $(PORT) --reload
+	uv run uvicorn src.main:app --host $(HOST) --port $(PORT) --reload
+
+run-prod: ## Run the application using gunicorn with provided arguments or defaults
+	uv run gunicorn main:app -c infra/gunicorn.conf.py
 
 migrate-create: ## Make alembic migrations
 	@echo "Making migrations with message $(M)"
