@@ -69,7 +69,7 @@ class OAuthService:
         tokens = self.security.create_tokens(UserPayload.model_validate(user))
         return tokens
 
-    async def get_redirect_url(self) -> str:
+    def get_redirect_url(self) -> str:
         redirect_url = getattr(auth_settings, f"{self.provider.value}_REDIRECT_URL")
         return redirect_url
 

@@ -9,7 +9,7 @@ router = APIRouter(tags=["socials"])
 
 @router.get("/login/google", response_class=RedirectResponse)
 async def google_login(service: GoogleServiceDep) -> RedirectResponse:
-    redirect_url = await service.get_redirect_url()
+    redirect_url = service.get_redirect_url()
     return RedirectResponse(url=redirect_url)
 
 
@@ -20,7 +20,7 @@ async def google_auth(service: GoogleServiceDep, code: str) -> Tokens:
 
 @router.get("/login/yandex", response_class=RedirectResponse)
 async def yandex_login(service: YandexServiceDep) -> RedirectResponse:
-    redirect_url = await service.get_redirect_url()
+    redirect_url = service.get_redirect_url()
     return RedirectResponse(url=redirect_url)
 
 
