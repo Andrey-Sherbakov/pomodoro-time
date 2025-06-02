@@ -31,6 +31,6 @@ async def delete_task(task_id: int, service: TaskServiceDep) -> TaskDb:
     return await service.delete_by_id(task_id)
 
 
-@router.get("/category/{category_id}", response_model=list[TaskDb])
-async def get_tasks_by_category(category_id: int, service: TaskServiceDep) -> list[TaskDb]:
-    return await service.get_tasks_by_category(category_id)
+@router.get("/category/{cat_id}", response_model=list[TaskDb])
+async def get_tasks_by_category(cat_id: int, service: TaskServiceDep) -> list[TaskDb]:
+    return await service.get_tasks_by_category(cat_id)

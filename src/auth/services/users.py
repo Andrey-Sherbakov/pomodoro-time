@@ -1,0 +1,169 @@
+import datetime
+from dataclasses import dataclass
+
+from slugify import slugify
+
+from src.auth.exceptions import (
+    UsernameAlreadyExists,
+    EmailAlreadyExists,
+    InvalidPassword,
+    ProviderError,
+)
+from src.auth.models import User
+from src.auth.repository import UserRepository
+from src.auth.schemas import (
+    UserPayload,
+    UserDb,
+    UserToDb,
+    UserCreate,
+    UserUpdate,
+    PasswordUpdate,
+    GoogleUserData,
+    YandexUserData,
+    Provider,
+    UserDataType,
+)
+from src.auth.services.security import SecurityService, TokenBlacklistService
+from src.core import SessionServiceBase
+
+
+@dataclass
+class UserService(SessionServiceBase):
+    user_repo: UserRepository
+    token_bl: TokenBlacklistService
+    security: SecurityService
+
+    async def get_current_user(self, current_user: UserPayload) -> UserDb:
+        user = await self.user_repo.get_by_id_or_404(current_user.id)
+
+        return UserDb.model_validate(user)
+
+    async def create_user(self, body: UserCreate) -> UserDb:
+        await self._validate_username_email(body.username, str(body.email))
+
+        user_to_db = UserToDb(
+            hashed_password=self.security.hash_password(body.password),
+            **body.model_dump(),
+        )
+        user = await self.user_repo.add(User(**user_to_db.model_dump()))
+
+        await self.commit()
+
+        return UserDb.model_validate(user)
+
+    async def create_superuser(self, body: UserCreate) -> UserDb:
+        await self._validate_username_email(body.username, str(body.email))
+
+        user_to_db = UserToDb(
+            hashed_password=self.security.hash_password(body.password),
+            is_admin=True,
+            **body.model_dump(),
+        )
+        user = await self.user_repo.add(User(**user_to_db.model_dump()))
+
+        await self.commit()
+
+        return UserDb.model_validate(user)
+
+    async def update_user(self, user_id: int, body: UserUpdate) -> UserDb:
+        user = await self.user_repo.get_by_id_or_404(user_id)
+
+        if body.username:
+            await self._validate_username(body.username)
+
+        if body.email:
+            await self._validate_email(str(body.email))
+
+        for key, value in body.model_dump().items():
+            if value:
+                setattr(user, key, value)
+
+        await self.commit()
+
+        return UserDb.model_validate(user)
+
+    async def change_password(self, body: PasswordUpdate, current_user: UserPayload) -> None:
+        user = await self.user_repo.get_by_id_or_404(current_user.id)
+        if not self.security.verify_password(body.old_password, user.hashed_password):
+            raise InvalidPassword
+        user.hashed_password = self.security.hash_password(body.new_password)
+
+        await self.commit()
+        await self.token_bl.set_logout_timestamp(user.id)
+
+    async def delete_user(self, user_id: int) -> UserDb:
+        user = await self.user_repo.get_by_id_or_404(user_id)
+        deleted_user = UserDb.model_validate(user)
+
+        await self.user_repo.delete(user)
+        await self.commit()
+        await self.token_bl.set_logout_timestamp(user.id)
+
+        return deleted_user
+
+    async def create_user_from_oauth(self, user_data: UserDataType, provider: Provider) -> User:
+        if user := await self.user_repo.get_by_email(email=str(user_data.email)):
+            return user
+
+        if provider == provider.google:
+            user_to_db = await self._user_from_google_to_db(user_data)
+        elif provider == provider.yandex:
+            user_to_db = await self._user_from_yandex_to_db(user_data)
+        else:
+            raise ProviderError
+
+        user = await self.user_repo.add(User(**user_to_db.model_dump()))
+        await self.commit()
+        return user
+
+    async def _user_from_google_to_db(self, user_data: GoogleUserData) -> UserToDb:
+        username = password = slugify(user_data.name)
+        try:
+            await self._validate_username(username)
+        except UsernameAlreadyExists:
+            username = slugify(user_data.name + user_data.sub)
+
+        return UserToDb(
+            username=username,
+            hashed_password=self.security.hash_password(password),
+            email=user_data.email,
+            full_name=user_data.name,
+        )
+
+    async def _user_from_yandex_to_db(self, user_data: YandexUserData) -> UserToDb:
+        username = password = slugify(user_data.login)
+        try:
+            await self._validate_username(username)
+        except UsernameAlreadyExists:
+            username = slugify(user_data.name + user_data.id)
+
+        return UserToDb(
+            username=username,
+            hashed_password=self.security.hash_password(password),
+            email=user_data.email,
+            full_name=user_data.real_name,
+            age=self._calculate_age_from_birthday(user_data.birthday),
+        )
+
+    async def _validate_username(self, username: str) -> None:
+        if await self.user_repo.get_by_username(username):
+            raise UsernameAlreadyExists
+
+    async def _validate_email(self, email: str) -> None:
+        if await self.user_repo.get_by_email(email):
+            raise EmailAlreadyExists
+
+    async def _validate_username_email(self, username: str, email: str) -> None:
+        await self._validate_username(username)
+        await self._validate_email(email)
+
+    @staticmethod
+    def _calculate_age_from_birthday(birthday: str) -> int:
+        birthdate = datetime.datetime.strptime(birthday, "%Y-%m-%d").date()
+        today = datetime.date.today()
+        age = (
+            today.year
+            - birthdate.year
+            - ((today.month, today.day) < (birthdate.month, birthdate.day))
+        )
+        return age

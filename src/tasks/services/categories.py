@@ -1,9 +1,15 @@
-from src.core.service import Service
+from dataclasses import dataclass
+
+from src.core import SessionServiceBase
 from src.tasks.models import Category
+from src.tasks.repository import CategoryRepository
 from src.tasks.schemas import CategoryDb, CategoryCreate
 
 
-class CategoryService(Service):
+@dataclass
+class CategoryService(SessionServiceBase):
+    cat_repo: CategoryRepository
+
     async def get_all(self) -> list[CategoryDb]:
         categories = await self.cat_repo.list()
 

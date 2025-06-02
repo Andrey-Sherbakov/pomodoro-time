@@ -2,31 +2,26 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.core.database import SessionDep, RedisDep
+from src.core import SessionDep, RedisCacheDep
+from src.tasks.services import CategoryService, TaskService
 from src.tasks.cache import TaskCache
-from src.tasks.repository import TaskRepository, CategoryRepository
-from src.tasks.services import TaskService, CategoryService
+from src.tasks.repository import CategoryRepository, TaskRepository
 
 
-async def get_task_service(session: SessionDep, redis: RedisDep):
+async def get_category_service(session: SessionDep) -> CategoryService:
+    return CategoryService(session=session, cat_repo=CategoryRepository(session=session))
+
+
+CategoryServiceDep = Annotated[CategoryService, Depends(get_category_service)]
+
+
+async def get_tasks_service(session: SessionDep, redis_cache: RedisCacheDep) -> TaskService:
     return TaskService(
         session=session,
-        redis=redis,
         task_repo=TaskRepository(session=session),
         cat_repo=CategoryRepository(session=session),
-        task_cache=TaskCache(redis_connection=redis),
+        task_cache=TaskCache(redis_connection=redis_cache),
     )
 
 
-async def get_category_service(session: SessionDep, redis: RedisDep):
-    return CategoryService(
-        session=session,
-        redis=redis,
-        task_repo=TaskRepository(session=session),
-        cat_repo=CategoryRepository(session=session),
-        task_cache=TaskCache(redis_connection=redis),
-    )
-
-
-TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
-CategoryServiceDep = Annotated[CategoryService, Depends(get_category_service)]
+TaskServiceDep = Annotated[TaskService, Depends(get_tasks_service)]

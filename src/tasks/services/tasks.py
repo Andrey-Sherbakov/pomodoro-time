@@ -1,9 +1,18 @@
-from src.core.service import Service
+from dataclasses import dataclass
+
+from src.core import SessionServiceBase
+from src.tasks.cache import TaskCache
 from src.tasks.models import Task
+from src.tasks.repository import TaskRepository, CategoryRepository
 from src.tasks.schemas import TaskDb, TaskCreate
 
 
-class TaskService(Service):
+@dataclass
+class TaskService(SessionServiceBase):
+    task_repo: TaskRepository
+    task_cache: TaskCache
+    cat_repo: CategoryRepository
+
     async def get_all(self) -> list[TaskDb]:
         cached_tasks = await self.task_cache.get_all_tasks()
         if cached_tasks is not None:
@@ -48,8 +57,8 @@ class TaskService(Service):
 
         return deleted_task
 
-    async def get_tasks_by_category(self, category_id: int) -> list[TaskDb]:
-        category = await self.cat_repo.get_by_id_or_404(category_id)
+    async def get_tasks_by_category(self, cat_id: int) -> list[TaskDb]:
+        category = await self.cat_repo.get_by_id_or_404(cat_id)
 
         tasks = await self.task_repo.get_by_category_id(category.id)
 

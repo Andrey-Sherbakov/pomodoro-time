@@ -1,0 +1,41 @@
+from fastapi import APIRouter
+
+from src.auth.dependencies import CurrentUserDep, UserServiceDep
+from src.auth.schemas import UserDb, UserCreate, UserUpdate, PasswordUpdate, PasswordUpdateResponse
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/profile", response_model=UserDb)
+async def get_current_user(service: UserServiceDep, current_user: CurrentUserDep) -> UserDb:
+    return await service.get_current_user(current_user)
+
+
+@router.post("/register", response_model=UserDb)
+async def create_user(body: UserCreate, service: UserServiceDep) -> UserDb:
+    return await service.create_user(body)
+
+
+@router.post("/register-superuser", response_model=UserDb)
+async def create_superuser(body: UserCreate, service: UserServiceDep) -> UserDb:
+    return await service.create_superuser(body)
+
+
+@router.put("/update", response_model=UserDb)
+async def update_profile(
+    body: UserUpdate, service: UserServiceDep, current_user: CurrentUserDep
+) -> UserDb:
+    return await service.update_user(current_user.id, body)
+
+
+@router.patch("/change-password", response_model=PasswordUpdateResponse)
+async def change_password(
+    body: PasswordUpdate, service: UserServiceDep, current_user: CurrentUserDep
+) -> PasswordUpdateResponse:
+    await service.change_password(body, current_user)
+    return PasswordUpdateResponse()
+
+
+@router.delete("/delete", response_model=UserDb)
+async def delete_profile(service: UserServiceDep, current_user: CurrentUserDep) -> UserDb:
+    return await service.delete_user(current_user.id)

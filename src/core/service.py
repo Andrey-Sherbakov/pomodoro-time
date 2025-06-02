@@ -1,18 +1,11 @@
-import dataclasses
+from dataclasses import dataclass
 
-from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.tasks.cache import TaskCache
-from src.tasks.repository import ITaskRepository, ICategoryRepository
 
-
-@dataclasses.dataclass
-class Service:
+@dataclass
+class SessionServiceBase:
     session: AsyncSession
-    redis: Redis
 
-    task_repo: ITaskRepository
-    cat_repo: ICategoryRepository
-
-    task_cache: TaskCache
+    async def commit(self):
+        await self.session.commit()
