@@ -3,28 +3,30 @@ from dataclasses import dataclass
 
 from slugify import slugify
 
-from src.auth.exceptions import (
+from src.core import SessionServiceBase
+from src.users.auth.exceptions import ProviderError
+from src.users.auth.schemas import (
+    UserPayload,
+    UserDataType,
+    Provider,
+    GoogleUserData,
+    YandexUserData,
+)
+from src.users.auth.services.security import SecurityService, TokenBlacklistService
+from src.users.profile.exceptions import (
     UsernameAlreadyExists,
     EmailAlreadyExists,
     InvalidPassword,
-    ProviderError,
 )
-from src.auth.models import User
-from src.auth.repository import UserRepository
-from src.auth.schemas import (
-    UserPayload,
+from src.users.profile.models import User
+from src.users.profile.repository import UserRepository
+from src.users.profile.schemas import (
     UserDb,
     UserToDb,
     UserCreate,
     UserUpdate,
     PasswordUpdate,
-    GoogleUserData,
-    YandexUserData,
-    Provider,
-    UserDataType,
 )
-from src.auth.services.security import SecurityService, TokenBlacklistService
-from src.core import SessionServiceBase
 
 
 @dataclass

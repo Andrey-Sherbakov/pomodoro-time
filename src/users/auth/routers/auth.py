@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from src.auth.dependencies import AuthServiceDep, CurrentUserDep
-from src.auth.schemas import Tokens, RefreshToken, UserLogin, LogoutResponse
+from src.users.dependencies import AuthServiceDep, CurrentUserDep
+from src.users.auth.schemas import Tokens, RefreshToken, UserLogin, LogoutResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -12,8 +12,8 @@ async def login(body: UserLogin, service: AuthServiceDep) -> Tokens:
 
 
 @router.post("/refresh", response_model=Tokens)
-async def refresh(form: RefreshToken, service: AuthServiceDep) -> Tokens:
-    return await service.refresh(form)
+async def refresh(body: RefreshToken, service: AuthServiceDep) -> Tokens:
+    return await service.refresh(body)
 
 
 @router.post("/logout", response_model=LogoutResponse)

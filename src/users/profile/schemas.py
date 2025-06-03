@@ -44,11 +44,6 @@ class UserUpdate(BaseModel):
         return self
 
 
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-
 class PasswordUpdate(BaseModel):
     old_password: str
     new_password: str

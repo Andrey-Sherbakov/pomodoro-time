@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from src.auth.clients import GoogleClient, YandexClient, BaseClient
-from src.auth.exceptions import (
+from src.users.auth.clients import GoogleClient, YandexClient, BaseClient
+from src.users.auth.exceptions import (
     AuthenticationError,
     TokenError,
 )
-from src.auth.repository import UserRepository
-from src.auth.schemas import (
+from src.users.profile.repository import UserRepository
+from src.users.auth.schemas import (
     Tokens,
     TokenType,
     RefreshToken,
@@ -15,8 +15,8 @@ from src.auth.schemas import (
     UserLogin,
     Provider,
 )
-from src.auth.services.security import TokenBlacklistService, SecurityService
-from src.auth.services.users import UserService
+from src.users.auth.services import TokenBlacklistService, SecurityService
+from src.users.profile.service import UserService
 from src.core import SessionServiceBase, auth_settings
 
 
@@ -35,9 +35,9 @@ class AuthService(SessionServiceBase):
 
         return tokens
 
-    async def refresh(self, form: RefreshToken) -> Tokens:
+    async def refresh(self, body: RefreshToken) -> Tokens:
         payload: RefreshTokenPayload = await self.security.decode_validate_token(
-            form.refresh_token, TokenType.refresh
+            body.refresh_token, TokenType.refresh
         )
         user = await self.user_repo.get_by_id(int(payload.sub))
         if not user:

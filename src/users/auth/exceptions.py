@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 
-from src.auth.schemas import Provider
+from src.users.auth.schemas import Provider
 
 
 class TokenError(HTTPException):

@@ -1,7 +1,13 @@
 from fastapi import APIRouter
 
-from src.auth.dependencies import CurrentUserDep, UserServiceDep
-from src.auth.schemas import UserDb, UserCreate, UserUpdate, PasswordUpdate, PasswordUpdateResponse
+from src.users.dependencies import CurrentUserDep, UserServiceDep
+from src.users.profile.schemas import (
+    UserDb,
+    UserCreate,
+    UserUpdate,
+    PasswordUpdate,
+    PasswordUpdateResponse,
+)
 
 router = APIRouter(prefix="/users", tags=["users"])
 

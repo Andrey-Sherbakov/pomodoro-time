@@ -5,8 +5,14 @@ from dataclasses import dataclass
 import jwt
 from redis.asyncio import Redis
 
-from src.auth.exceptions import InvalidTokenType, TokenRevoked, TokenExpired
-from src.auth.schemas import TokenType, UserPayload, AccessTokenPayload, RefreshTokenPayload, Tokens
+from src.users.auth.exceptions import InvalidTokenType, TokenRevoked, TokenExpired, TokenError
+from src.users.auth.schemas import (
+    TokenType,
+    UserPayload,
+    AccessTokenPayload,
+    RefreshTokenPayload,
+    Tokens,
+)
 from src.core import settings
 
 
@@ -23,7 +29,7 @@ class TokenBlacklistService:
     async def is_blacklisted(self, jti: str) -> bool:
         return await self.redis_bl.exists(f"revoked:{jti}") == 1
 
-    # blacklist all jwt pairs given to user for logout all scenario
+    # blacklist all jwt pairs given to user for logout-all scenario
     async def set_logout_timestamp(
         self, user_id: int, ex_seconds: int = settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400
     ) -> None:

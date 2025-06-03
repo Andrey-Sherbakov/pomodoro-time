@@ -3,22 +3,22 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from src.auth.clients import GoogleClient, YandexClient
-from src.auth.exceptions import TokenError, AuthorizationError
-from src.auth.repository import UserRepository
-from src.auth.schemas import UserPayload, TokenType, AccessTokenPayload, Provider
-from src.auth.services import (
-    AuthService,
-    UserService,
-    SecurityService,
+from src.core import SessionDep, ClientSessionDep, RedisBlacklistDep
+from src.users.auth.clients import GoogleClient, YandexClient
+from src.users.auth.exceptions import TokenError, AuthorizationError
+from src.users.auth.schemas import Provider, UserPayload, AccessTokenPayload, TokenType
+from src.users.auth.services import (
     TokenBlacklistService,
+    SecurityService,
+    AuthService,
     GoogleService,
     YandexService,
 )
-from src.core import RedisBlacklistDep, SessionDep, ClientSessionDep
+from src.users.profile.repository import UserRepository
+from src.users.profile.service import UserService
 
 
-# security services
+# security dependencies
 
 
 async def get_token_bl_service(redis_bl: RedisBlacklistDep) -> TokenBlacklistService:
@@ -37,21 +37,7 @@ async def get_security_service(
 SecurityServiceDep = Annotated[SecurityService, Depends(get_security_service)]
 
 
-# main auth/user services
-
-
-async def get_user_service(
-    session: SessionDep, security: SecurityServiceDep, token_bl: TokenBLServiceDep
-) -> UserService:
-    return UserService(
-        session=session,
-        user_repo=UserRepository(session=session),
-        token_bl=token_bl,
-        security=security,
-    )
-
-
-UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+# main auth dependency
 
 
 async def get_auth_service(
@@ -68,7 +54,21 @@ async def get_auth_service(
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 
 
-# OAuth2 clients
+async def get_user_service(
+    session: SessionDep, security: SecurityServiceDep, token_bl: TokenBLServiceDep
+) -> UserService:
+    return UserService(
+        session=session,
+        user_repo=UserRepository(session=session),
+        token_bl=token_bl,
+        security=security,
+    )
+
+
+UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+
+
+# clients dependencies
 
 
 async def get_google_client(client_session: ClientSessionDep) -> GoogleClient:
@@ -85,7 +85,7 @@ async def get_yandex_client(client_session: ClientSessionDep) -> YandexClient:
 YandexClientDep = Annotated[YandexClient, Depends(get_yandex_client)]
 
 
-# OAuth2 services
+# OAuth2 dependencies
 
 
 async def get_google_service(
@@ -116,6 +116,7 @@ async def get_yandex_service(
 YandexServiceDep = Annotated[YandexService, Depends(get_yandex_service)]
 
 # token dependency
+
 oauth2_scheme = HTTPBearer()
 
 

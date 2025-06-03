@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import select
 
-from src.auth.models import User
+from src.users.profile.models import User
 from src.core.repository import IRepository, ORMRepository
 
 

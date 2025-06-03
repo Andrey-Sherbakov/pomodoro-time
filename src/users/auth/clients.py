@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from aiohttp import ClientSession
 
-from src.auth.schemas import GoogleUserData, YandexUserData, UserDataType, Provider
+from src.users.auth.schemas import GoogleUserData, YandexUserData, UserDataType, Provider
 from src.core import auth_settings
 
 

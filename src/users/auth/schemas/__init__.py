@@ -1,4 +1,4 @@
-from src.auth.schemas.auth import (
+from src.users.auth.schemas.auth import (
     Tokens,
     TokenType,
     UserPayload,
@@ -6,17 +6,9 @@ from src.auth.schemas.auth import (
     RefreshTokenPayload,
     RefreshToken,
     LogoutResponse,
-)
-from src.auth.schemas.users import (
-    UserDb,
-    UserToDb,
-    UserCreate,
-    UserUpdate,
     UserLogin,
-    PasswordUpdate,
-    PasswordUpdateResponse,
 )
-from src.auth.schemas.socials import (
+from src.users.auth.schemas.socials import (
     Provider,
     UserDataType,
     UserData,

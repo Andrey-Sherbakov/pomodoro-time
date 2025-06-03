@@ -44,3 +44,8 @@ class AccessTokenPayload(RefreshTokenPayload, Payload):
 
 class LogoutResponse(BaseModel):
     detail: str = "Successfully logged out"
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
