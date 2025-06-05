@@ -26,6 +26,14 @@ uninstall: ## Uninstall a dependency using poetry
 	@echo "Uninstalling dependency $(LIBRARY)"
 	uv remove $(LIBRARY)
 
+dev-db-up: ## Start docker containers with dev postgres and redis
+	@echo "Dev database containers starting"
+	docker compose -f docker-compose.dev.yml --env-file .dev.env up -d
+
+dev-db-down: ## Close docker containers with dev postgres and redis
+	@echo "Dev database containers closing"
+	docker compose -f docker-compose.dev.yml down
+
 test-db-up: ## Start docker containers with test postgres and redis
 	@echo "Test database containers starting"
 	docker compose -f docker-compose.test.yml --env-file .test.env up -d
