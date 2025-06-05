@@ -1,5 +1,3 @@
-import asyncio
-
 import jwt
 from fastapi import status
 from httpx import AsyncClient
@@ -61,8 +59,6 @@ class TestRefresh:
 
     async def test_fail(self, ac: AsyncClient, settings: Settings, test_tokens):
         body = RefreshToken(refresh_token=test_tokens.refresh_token_exp)
-
-        await asyncio.sleep(0.2)
 
         response = await ac.post("/api/auth/refresh", json=body.model_dump())
 

@@ -16,7 +16,7 @@ class UserCreate(BaseUser):
     @field_validator("password_confirm")
     def password_match(cls, v, info: ValidationInfo):
         if "password" in info.data and v != info.data["password"]:
-            raise ValueError("passwords do not match")
+            raise ValueError("Passwords do not match")
         return v
 
 
@@ -27,6 +27,7 @@ class UserToDb(BaseUser):
 
 class UserDb(BaseUser):
     id: int
+    is_admin: bool
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -52,9 +53,13 @@ class PasswordUpdate(BaseModel):
     @field_validator("new_password_confirm")
     def password_match(cls, v, info: ValidationInfo):
         if "new_password" in info.data and v != info.data["new_password"]:
-            raise ValueError("passwords do not match")
+            raise ValueError("Passwords do not match")
         return v
 
 
 class PasswordUpdateResponse(BaseModel):
     detail: str = "Password successfully updated, please login again"
+
+
+class UserDeleteResponse(BaseModel):
+    detail: str = "User successfully deleted"

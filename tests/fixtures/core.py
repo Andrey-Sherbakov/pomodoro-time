@@ -76,6 +76,12 @@ async def get_async_session_test() -> AsyncGenerator[AsyncSession, None]:
         yield test_session
 
 
+@pytest.fixture
+async def session():
+    async with test_async_session_maker() as test_session:
+        yield test_session
+
+
 # async client for testing
 @pytest.fixture
 async def ac():

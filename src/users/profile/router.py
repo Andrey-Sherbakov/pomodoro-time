@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from starlette import status
 
 from src.users.dependencies import CurrentUserDep, UserServiceDep
 from src.users.profile.schemas import (
@@ -7,6 +8,7 @@ from src.users.profile.schemas import (
     UserCreate,
     UserDb,
     UserUpdate,
+    UserDeleteResponse,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -17,12 +19,12 @@ async def get_current_user(service: UserServiceDep, current_user: CurrentUserDep
     return await service.get_current_user(current_user)
 
 
-@router.post("/register", response_model=UserDb)
+@router.post("/register", response_model=UserDb, status_code=status.HTTP_201_CREATED)
 async def create_user(body: UserCreate, service: UserServiceDep) -> UserDb:
     return await service.create_user(body)
 
 
-@router.post("/register-superuser", response_model=UserDb)
+@router.post("/register-superuser", response_model=UserDb, status_code=status.HTTP_201_CREATED)
 async def create_superuser(body: UserCreate, service: UserServiceDep) -> UserDb:
     return await service.create_superuser(body)
 
@@ -42,6 +44,9 @@ async def change_password(
     return PasswordUpdateResponse()
 
 
-@router.delete("/delete", response_model=UserDb)
-async def delete_profile(service: UserServiceDep, current_user: CurrentUserDep) -> UserDb:
-    return await service.delete_user(current_user.id)
+@router.delete("/delete", response_model=UserDeleteResponse)
+async def delete_profile(
+    service: UserServiceDep, current_user: CurrentUserDep
+) -> UserDeleteResponse:
+    await service.delete_user(current_user.id)
+    return UserDeleteResponse()
