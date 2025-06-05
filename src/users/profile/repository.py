@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from sqlalchemy import select
 
-from src.users.profile.models import User
 from src.core.repository import IRepository, ORMRepository
+from src.users.profile.models import User
 
 
 class IUserRepository(IRepository[User], ABC):

@@ -1,7 +1,7 @@
 services:
-  postgres:
+  postgres-test:
     image: postgres:17-alpine
-    container_name: pomodoro-psql
+    container_name: pomodoro-psql-test
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
@@ -9,24 +9,24 @@ services:
     ports:
       - ${DB_PORT}:5432
     volumes:
-      - pomodoro_psql:/var/lib/postgresql/data
+      - pomodoro-psql-test:/var/lib/postgresql/data
     networks:
-      - pomodoro-net
+      - pomodoro-net-test
 
-  redis:
+  redis-test:
     image: redis:7.4-alpine
-    container_name: redis-container
+    container_name: redis-container-test
     ports:
       - ${REDIS_PORT}:6379
-    networks:
-      - pomodoro-net
     volumes:
-      - pomodoro_redis:/data
+      - pomodoro-redis-test:/data
+    networks:
+      - pomodoro-net-test
 
 networks:
-  pomodoro-net:
+  pomodoro-net-test:
     driver: bridge
 
 volumes:
-  pomodoro_psql:
-  pomodoro_redis:
+  pomodoro-psql-test:
+  pomodoro-redis-test:

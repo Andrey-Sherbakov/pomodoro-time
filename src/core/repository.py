@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, Sequence
+from typing import Generic, Sequence, TypeVar
 
-from fastapi import status, HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 

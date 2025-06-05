@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from src.core import SessionServiceBase
 from src.tasks.models import Category
 from src.tasks.repository import CategoryRepository
-from src.tasks.schemas import CategoryDb, CategoryCreate
+from src.tasks.schemas import CategoryCreate, CategoryDb
 
 
 @dataclass

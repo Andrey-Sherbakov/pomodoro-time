@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 
-from src.users.dependencies import GoogleServiceDep, YandexServiceDep
 from src.users.auth.schemas import Tokens
+from src.users.dependencies import GoogleServiceDep, YandexServiceDep
 
 router = APIRouter()
 

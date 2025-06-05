@@ -1,14 +1,16 @@
 import json
+from dataclasses import dataclass
 
 from redis.asyncio import Redis
 
-from src.core.config import settings
+from src.core.config import Settings
 from src.tasks.schemas import TaskDb
 
 
+@dataclass
 class TaskCache:
-    def __init__(self, redis_connection: Redis) -> None:
-        self.redis = redis_connection
+    redis: Redis
+    settings: Settings
 
     async def get_all_tasks(self, key: str = "all_tasks") -> list[TaskDb] | None:
         if tasks_json := await self.redis.get(key):
@@ -17,8 +19,11 @@ class TaskCache:
         return None
 
     async def set_all_tasks(
-        self, tasks: list[TaskDb], key: str = "all_tasks", ex: int = settings.DEFAULT_CACHE_SECONDS
+        self, tasks: list[TaskDb], key: str = "all_tasks", ex: int | None = None
     ) -> None:
+        if ex is None:
+            ex = self.settings.DEFAULT_CACHE_SECONDS
+
         tasks_json = json.dumps([task.model_dump() for task in tasks], ensure_ascii=False)
         await self.redis.set(key, tasks_json, ex=ex)
 

@@ -1,13 +1,14 @@
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Annotated
 
-from aiohttp import ClientSession
-from fastapi import FastAPI, Depends, Request
-from redis.asyncio import Redis, ConnectionError
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from fastapi import FastAPI
+from httpx import AsyncClient
+from redis.asyncio import ConnectionError, Redis
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from src.core import settings
+from src.core.config import get_settings
+
+settings = get_settings()
 
 
 class Base(DeclarativeBase):
@@ -20,8 +21,8 @@ async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_
 
 
 # async client session
-def client_session_init() -> ClientSession:
-    return ClientSession()
+def async_client_init() -> AsyncClient:
+    return AsyncClient()
 
 
 # redis connection management
@@ -45,7 +46,7 @@ def redis_blacklist_init() -> Redis:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.client_session = client_session_init()
+    app.state.async_client = async_client_init()
     app.state.redis_cache = redis_cache_init()
     app.state.redis_blacklist = redis_blacklist_init()
 
@@ -61,6 +62,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    await app.state.client_session.close()
+    await app.state.async_client.aclose()
     await app.state.redis_cache.aclose()
     await app.state.redis_blacklist.aclose()

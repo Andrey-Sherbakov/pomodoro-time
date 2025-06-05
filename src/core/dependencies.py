@@ -1,10 +1,11 @@
-from typing import AsyncGenerator, Annotated
+from typing import Annotated, AsyncGenerator
 
-from aiohttp import ClientSession
 from fastapi import Depends, Request
+from httpx import AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.config import MainAuthSettings, MainSettings, get_auth_settings, get_settings
 from src.core.database import async_session_maker
 
 
@@ -13,8 +14,8 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def get_client_session(request: Request) -> ClientSession:
-    client_session = request.app.state.client_session
+async def get_async_client(request: Request) -> AsyncClient:
+    client_session = request.app.state.async_client
     if client_session is None:
         raise RuntimeError("Redis cache client not initialized")
     return client_session
@@ -35,6 +36,8 @@ async def get_redis_blacklist(request: Request) -> Redis:
 
 
 SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
-ClientSessionDep = Annotated[ClientSession, Depends(get_client_session)]
+AsyncClientDep = Annotated[AsyncClient, Depends(get_async_client)]
 RedisCacheDep = Annotated[Redis, Depends(get_redis_cache)]
 RedisBlacklistDep = Annotated[Redis, Depends(get_redis_blacklist)]
+SettingsDep = Annotated[MainSettings, Depends(get_settings)]
+AuthSettingsDep = Annotated[MainAuthSettings, Depends(get_auth_settings)]

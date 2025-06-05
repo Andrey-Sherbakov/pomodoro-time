@@ -1,23 +1,24 @@
 from dataclasses import dataclass
 
-from src.users.auth.clients import GoogleClient, YandexClient, BaseClient
+from src.core import SessionServiceBase
+from src.core.config import AuthSettings
+from src.users.auth.clients import BaseClient, GoogleClient, YandexClient
 from src.users.auth.exceptions import (
     AuthenticationError,
     TokenError,
 )
-from src.users.profile.repository import UserRepository
 from src.users.auth.schemas import (
+    Provider,
+    RefreshToken,
+    RefreshTokenPayload,
     Tokens,
     TokenType,
-    RefreshToken,
-    UserPayload,
-    RefreshTokenPayload,
     UserLogin,
-    Provider,
+    UserPayload,
 )
-from src.users.auth.services import TokenBlacklistService, SecurityService
+from src.users.auth.services import SecurityService, TokenBlacklistService
+from src.users.profile.repository import UserRepository
 from src.users.profile.service import UserService
-from src.core import SessionServiceBase, auth_settings
 
 
 @dataclass
@@ -60,6 +61,7 @@ class OAuthService:
     provider: Provider
     user_service: UserService
     security: SecurityService
+    auth_settings: AuthSettings
 
     async def auth(self, code: str) -> Tokens:
         user_data = await self.client.get_user_info(code)
@@ -70,7 +72,7 @@ class OAuthService:
         return tokens
 
     def get_redirect_url(self) -> str:
-        redirect_url = getattr(auth_settings, f"{self.provider.value}_REDIRECT_URL")
+        redirect_url = getattr(self.auth_settings, f"{self.provider.value}_REDIRECT_URL")
         return redirect_url
 
 
