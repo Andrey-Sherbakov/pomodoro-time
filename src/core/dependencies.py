@@ -5,7 +5,7 @@ from httpx import AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import MainAuthSettings, MainSettings, get_auth_settings, get_settings
+from src.core.config import AuthSettings, Settings, get_auth_settings, get_settings
 from src.core.database import async_session_maker
 
 
@@ -39,5 +39,5 @@ SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 AsyncClientDep = Annotated[AsyncClient, Depends(get_async_client)]
 RedisCacheDep = Annotated[Redis, Depends(get_redis_cache)]
 RedisBlacklistDep = Annotated[Redis, Depends(get_redis_blacklist)]
-SettingsDep = Annotated[MainSettings, Depends(get_settings)]
-AuthSettingsDep = Annotated[MainAuthSettings, Depends(get_auth_settings)]
+SettingsDep = Annotated[Settings, Depends(get_settings)]
+AuthSettingsDep = Annotated[AuthSettings, Depends(get_auth_settings)]
