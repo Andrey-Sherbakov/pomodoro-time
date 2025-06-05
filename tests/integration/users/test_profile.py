@@ -1,7 +1,7 @@
 from httpx import AsyncClient
 from starlette import status
 
-from src.users.profile.schemas import UserDb
+from src.users.profile.schemas import UserDb, UserCreate
 
 
 class TestProfile:
@@ -40,6 +40,19 @@ class TestRegister:
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert response.json()["detail"][0]["msg"] == "Value error, Passwords do not match"
 
+    async def test_exists(self, ac: AsyncClient, test_user):
+        user = UserCreate(**test_user.model_dump(), password_confirm=test_user.password)
+        user.email = "another@email.com"
+        response = await ac.post("/api/users/register", json=user.model_dump())
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert response.json()["detail"] == "User with this username already exists"
+
+        user = UserCreate(**test_user.model_dump(), password_confirm=test_user.password)
+        user.username = "another_username"
+        response = await ac.post("/api/users/register", json=user.model_dump())
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert response.json()["detail"] == "User with this email already exists"
+
 
 class TestRegisterSuperuser:
     async def test_success(self, ac: AsyncClient, user_create, user_repository):
@@ -60,6 +73,19 @@ class TestRegisterSuperuser:
         response = await ac.post("/api/users/register-superuser", json=user_create.model_dump())
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         assert response.json()["detail"][0]["msg"] == "Value error, Passwords do not match"
+
+    async def test_exists(self, ac: AsyncClient, test_user):
+        user = UserCreate(**test_user.model_dump(), password_confirm=test_user.password)
+        user.email = "another@email.com"
+        response = await ac.post("/api/users/register-superuser", json=user.model_dump())
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert response.json()["detail"] == "User with this username already exists"
+
+        user = UserCreate(**test_user.model_dump(), password_confirm=test_user.password)
+        user.username = "another_username"
+        response = await ac.post("/api/users/register-superuser", json=user.model_dump())
+        assert response.status_code == status.HTTP_409_CONFLICT
+        assert response.json()["detail"] == "User with this email already exists"
 
 
 class TestUpdate:

@@ -13,3 +13,7 @@ class CategoryDb(CategoryBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CategoryDeleteResponse(BaseModel):
+    detail: str = "Category successfully deleted"
