@@ -2,6 +2,7 @@ import datetime
 
 import jwt
 
+from src.core.config import get_settings
 from src.users.auth.schemas import (
     AccessTokenPayload,
     RefreshTokenPayload,
@@ -10,11 +11,10 @@ from src.users.auth.schemas import (
     UserPayload,
 )
 from src.users.auth.services import SecurityService
-from tests.fixtures.core import get_settings_test
 
 
 class TestSecurityService:
-    settings = get_settings_test()
+    settings = get_settings()
     test_password: str = "test_password"
     test_user_payload: UserPayload = UserPayload(
         username="test", email="test@email.com", is_admin=False, id=1

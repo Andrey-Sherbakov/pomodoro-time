@@ -27,7 +27,7 @@ class CategoryFactory(factory.Factory):
         model = Category
 
     id = factory.LazyFunction(lambda: faker.random_int(min=2))
-    name = factory.LazyFunction(lambda: faker.word().capitalize())
+    name = factory.LazyFunction(lambda: faker.pystr(min_chars=3, max_chars=50))
 
 
 @pytest.fixture

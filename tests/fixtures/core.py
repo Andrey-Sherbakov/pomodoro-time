@@ -2,47 +2,30 @@ from typing import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from pydantic_settings import SettingsConfigDict
 from redis.asyncio import Redis
 from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from src.core import Base
-from src.core.config import AuthSettings, Settings, get_settings, get_auth_settings
-from src.core.dependencies import get_async_session, get_redis_cache, get_redis_blacklist
+from src.core.config import get_auth_settings, get_settings
+from src.core.dependencies import get_async_session, get_redis_blacklist, get_redis_cache
 from src.main import app
-from src.tasks.models import Task, Category
+from src.tasks.models import Category, Task
 from src.users.profile.models import User
 
 
 # test settings setup
-class TestSettings(Settings):
-    model_config = SettingsConfigDict(env_file=".test.env", extra="allow")
-
-
-class TestAuthSettings(AuthSettings):
-    model_config = SettingsConfigDict(env_file=".test.env", extra="allow")
-
-
-def get_settings_test():
-    return TestSettings()
-
-
-def get_auth_settings_test():
-    return TestAuthSettings()
-
-
 @pytest.fixture
 def settings():
-    return get_settings_test()
+    return get_settings()
 
 
 @pytest.fixture
 def auth_settings():
-    return get_auth_settings_test()
+    return get_auth_settings()
 
 
-test_settings = get_settings_test()
+test_settings = get_settings()
 
 
 # test database setup
@@ -169,8 +152,6 @@ def redis_bl():
 
 @pytest.fixture(autouse=True, scope="session")
 def override_dependencies():
-    app.dependency_overrides[get_settings] = get_settings_test
-    app.dependency_overrides[get_auth_settings] = get_auth_settings_test
     app.dependency_overrides[get_async_session] = get_async_session_test
     app.dependency_overrides[get_redis_cache] = get_redis_cache_test
     app.dependency_overrides[get_redis_blacklist] = get_redis_blacklist_test
