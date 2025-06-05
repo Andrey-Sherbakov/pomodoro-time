@@ -13,7 +13,7 @@ class Task(Base):
     creator_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
 
     category: Mapped["Category"] = relationship(back_populates="tasks")
-    creator: Mapped["User"] = relationship(back_populates="tasks")
+    creator: Mapped["User"] = relationship(back_populates="tasks")  # noqa: F821
 
 
 class Category(Base):

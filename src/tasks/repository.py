@@ -15,7 +15,9 @@ class ITaskRepository(IRepository[Task], ABC):
     async def get_by_category_id(self, category_id: int) -> list[Task]: ...
 
 
-class ICategoryRepository(IRepository[Category], ABC): ...
+class ICategoryRepository(IRepository[Category], ABC):
+    @abstractmethod
+    async def get_by_name(self, name: str) -> Task | None: ...
 
 
 class TaskRepository(ORMRepository[Task], ITaskRepository):
@@ -34,3 +36,9 @@ class TaskRepository(ORMRepository[Task], ITaskRepository):
 
 class CategoryRepository(ORMRepository[Category], ICategoryRepository):
     model = Category
+
+    async def get_by_name(self, name: str) -> Category | None:
+        stmt = select(Category).where(Category.name == name)
+        category = await self.session.scalar(stmt)
+        return category
+

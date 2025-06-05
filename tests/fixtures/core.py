@@ -11,6 +11,7 @@ from src.core import Base
 from src.core.config import AuthSettings, Settings, get_settings, get_auth_settings
 from src.core.dependencies import get_async_session, get_redis_cache, get_redis_blacklist
 from src.main import app
+from src.tasks.models import Task, Category
 from src.users.profile.models import User
 
 
@@ -52,7 +53,7 @@ test_async_session_maker = async_sessionmaker(
 
 
 @pytest.fixture(autouse=True)
-async def prepare_database(test_user):
+async def prepare_database(test_user, test_task, test_category):
     async with engine_test.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -63,6 +64,18 @@ async def prepare_database(test_user):
             email=test_user.email,
         )
         session.add(user)
+
+        category = Category(name=test_category.name)
+        session.add(category)
+
+        task = Task(
+            name=test_task.name,
+            pomodoro_count=test_task.pomodoro_count,
+            category_id=test_task.category_id,
+            creator_id=test_task.creator_id,
+        )
+        session.add(task)
+
         await session.commit()
 
     yield
@@ -72,6 +85,12 @@ async def prepare_database(test_user):
 
 
 async def get_async_session_test() -> AsyncGenerator[AsyncSession, None]:
+    async with test_async_session_maker() as test_session:
+        yield test_session
+
+
+@pytest.fixture
+async def session():
     async with test_async_session_maker() as test_session:
         yield test_session
 
@@ -135,6 +154,16 @@ async def get_redis_cache_test() -> Redis:
 async def get_redis_blacklist_test() -> Redis:
     if REDIS_BLACKLIST is None:
         raise RuntimeError("Test redis blacklist client not initialized")
+    return REDIS_BLACKLIST
+
+
+@pytest.fixture
+def redis_cache():
+    return REDIS_CACHE
+
+
+@pytest.fixture
+def redis_bl():
     return REDIS_BLACKLIST
 
 

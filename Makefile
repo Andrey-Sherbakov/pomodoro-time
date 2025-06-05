@@ -27,11 +27,11 @@ uninstall: ## Uninstall a dependency using poetry
 	uv remove $(LIBRARY)
 
 test-db-up: ## Start docker containers with test postgres and redis
-	@echo "Test docker container running"
+	@echo "Test database containers starting"
 	docker compose -f docker-compose.test.yml --env-file .test.env up -d
 
 test-db-down: ## Close docker containers with test postgres and redis
-	@echo "Test docker container closed"
+	@echo "Test database containers closing"
 	docker compose -f docker-compose.test.yml down
 
 help: ## Show this help message

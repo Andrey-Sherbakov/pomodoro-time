@@ -93,15 +93,12 @@ class UserService(SessionServiceBase):
         await self.commit()
         await self.token_bl.set_logout_timestamp(user.id)
 
-    async def delete_user(self, user_id: int) -> UserDb:
+    async def delete_user(self, user_id: int) -> None:
         user = await self.user_repo.get_by_id_or_404(user_id)
-        deleted_user = UserDb.model_validate(user)
 
         await self.user_repo.delete(user)
         await self.commit()
         await self.token_bl.set_logout_timestamp(user.id)
-
-        return deleted_user
 
     async def create_user_from_oauth(self, user_data: UserDataType, provider: Provider) -> User:
         if user := await self.user_repo.get_by_email(email=str(user_data.email)):

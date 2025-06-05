@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from src.core import SessionServiceBase
+from src.tasks.exceptions import CategoryNameAlreadyExists
 from src.tasks.models import Category
 from src.tasks.repository import CategoryRepository
 from src.tasks.schemas import CategoryCreate, CategoryDb
@@ -16,6 +17,8 @@ class CategoryService(SessionServiceBase):
         return [CategoryDb.model_validate(category) for category in categories]
 
     async def create(self, new_category: CategoryCreate) -> CategoryDb:
+        await self._validate_name(new_category.name)
+
         category = await self.cat_repo.add(Category(**new_category.model_dump()))
         await self.session.commit()
 
@@ -36,11 +39,12 @@ class CategoryService(SessionServiceBase):
 
         return CategoryDb.model_validate(category)
 
-    async def delete_by_id(self, cat_id: int) -> CategoryDb:
+    async def delete_by_id(self, cat_id: int) -> None:
         category = await self.cat_repo.get_by_id_or_404(cat_id)
-        deleted_category = CategoryDb.model_validate(category)
 
         await self.cat_repo.delete(category)
         await self.session.commit()
 
-        return deleted_category
+    async def _validate_name(self, name: str) -> None:
+        if await self.cat_repo.get_by_name(name):
+            raise CategoryNameAlreadyExists

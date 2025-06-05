@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from src.core import RedisCacheDep, SessionDep
+from src.core import RedisCacheDep, SessionDep, SettingsDep
 from src.tasks.cache import TaskCache
 from src.tasks.repository import CategoryRepository, TaskRepository
 from src.tasks.services import CategoryService, TaskService
@@ -16,7 +16,7 @@ CategoryServiceDep = Annotated[CategoryService, Depends(get_category_service)]
 
 
 async def get_tasks_service(
-    session: SessionDep, redis_cache: RedisCacheDep, settings: SessionDep
+    session: SessionDep, redis_cache: RedisCacheDep, settings: SettingsDep
 ) -> TaskService:
     return TaskService(
         session=session,

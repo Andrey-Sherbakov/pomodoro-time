@@ -1,7 +1,8 @@
 from fastapi import APIRouter, status
 
 from src.tasks.dependencies import TaskServiceDep
-from src.tasks.schemas import TaskCreate, TaskDb
+from src.tasks.schemas import TaskCreate, TaskDb, TaskDeleteResponse
+from src.users.dependencies import CurrentUserDep
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -12,8 +13,10 @@ async def get_all_tasks(service: TaskServiceDep) -> list[TaskDb]:
 
 
 @router.post("/", response_model=TaskDb, status_code=status.HTTP_201_CREATED)
-async def create_task(body: TaskCreate, service: TaskServiceDep) -> TaskDb:
-    return await service.create(body)
+async def create_task(
+    body: TaskCreate, service: TaskServiceDep, current_user: CurrentUserDep
+) -> TaskDb:
+    return await service.create(body, current_user.id)
 
 
 @router.get("/{task_id}", response_model=TaskDb)
@@ -26,9 +29,10 @@ async def update_task(task_id: int, body: TaskCreate, service: TaskServiceDep) -
     return await service.update_by_id(task_id, body)
 
 
-@router.delete("/{task_id}", response_model=TaskDb)
-async def delete_task(task_id: int, service: TaskServiceDep) -> TaskDb:
-    return await service.delete_by_id(task_id)
+@router.delete("/{task_id}", response_model=TaskDeleteResponse)
+async def delete_task(task_id: int, service: TaskServiceDep) -> TaskDeleteResponse:
+    await service.delete_by_id(task_id)
+    return TaskDeleteResponse()
 
 
 @router.get("/category/{cat_id}", response_model=list[TaskDb])
