@@ -10,11 +10,11 @@ from src.users.auth.schemas import (
     UserPayload,
 )
 from src.users.auth.services import SecurityService
-from tests.fixtures.core import get_settings_test
+from tests.fixtures.core import test_settings
 
 
 class TestSecurityService:
-    settings = get_settings_test()
+    settings = test_settings
     test_password: str = "test_password"
     test_user_payload: UserPayload = UserPayload(
         username="test", email="test@email.com", is_admin=False, id=1

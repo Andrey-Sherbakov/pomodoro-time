@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from passlib.context import CryptContext
@@ -35,9 +36,7 @@ class Settings(BaseSettings):
             f"{self.DB_PORT}/{self.DB_NAME}"
         )
 
-
-class MainSettings(Settings):
-    model_config = SettingsConfigDict(env_file=".env", extra="allow")
+    model_config = SettingsConfigDict(extra="allow")
 
 
 class AuthSettings(BaseSettings):
@@ -72,16 +71,18 @@ class AuthSettings(BaseSettings):
             f"&redirect_uri={self.YANDEX_REDIRECT_URI}"
         )
 
-
-class MainAuthSettings(AuthSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="allow")
+    model_config = SettingsConfigDict(extra="allow")
 
 
 @lru_cache
-def get_settings() -> MainSettings:
-    return MainSettings()
+def get_settings() -> Settings:
+    environment = os.environ.get("ENVIRONMENT", "dev")
+    env_file = f".{environment.lower()}.env"
+    return Settings(_env_file=env_file)
 
 
 @lru_cache
-def get_auth_settings() -> MainAuthSettings:
-    return MainAuthSettings()
+def get_auth_settings() -> AuthSettings:
+    environment = os.environ.get("ENVIRONMENT", "dev")
+    env_file = f".{environment.lower()}.env"
+    return AuthSettings(_env_file=env_file)

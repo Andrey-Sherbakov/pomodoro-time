@@ -1,72 +1,53 @@
-from typing import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from pydantic_settings import SettingsConfigDict
 from redis.asyncio import Redis
-from sqlalchemy import NullPool
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from src.core import Base
-from src.core.config import AuthSettings, Settings, get_settings, get_auth_settings
-from src.core.dependencies import get_async_session, get_redis_cache, get_redis_blacklist
+from src.core.config import get_settings, get_auth_settings
+from src.core.database import engine, async_session_maker
+from src.core.dependencies import get_redis_cache, get_redis_blacklist
 from src.main import app
 from src.tasks.models import Task, Category
 from src.users.profile.models import User
 
 
-# test settings setup
-class TestSettings(Settings):
-    model_config = SettingsConfigDict(env_file=".test.env", extra="allow")
-
-
-class TestAuthSettings(AuthSettings):
-    model_config = SettingsConfigDict(env_file=".test.env", extra="allow")
-
-
-def get_settings_test():
-    return TestSettings()
-
-
-def get_auth_settings_test():
-    return TestAuthSettings()
-
-
+# settings fixtures
 @pytest.fixture
 def settings():
-    return get_settings_test()
+    return get_settings()
 
 
 @pytest.fixture
 def auth_settings():
-    return get_auth_settings_test()
+    return get_auth_settings()
 
 
-test_settings = get_settings_test()
+test_settings = get_settings()
 
 
-# test database setup
-engine_test = create_async_engine(test_settings.DATABASE_URL, poolclass=NullPool)
-test_async_session_maker = async_sessionmaker(
-    engine_test, class_=AsyncSession, expire_on_commit=False
-)
+# # test database setup
+# engine_test = create_async_engine(test_settings.DATABASE_URL, poolclass=NullPool)
+# test_async_session_maker = async_sessionmaker(
+#     engine_test, class_=AsyncSession, expire_on_commit=False
+# )
 
 
 @pytest.fixture(autouse=True)
 async def prepare_database(test_user, test_task, test_category):
-    async with engine_test.begin() as conn:
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    async with test_async_session_maker() as session:
+    async with async_session_maker() as async_session:
         user = User(
             username=test_user.username,
             hashed_password=test_user.hashed_password,
             email=test_user.email,
         )
-        session.add(user)
+        async_session.add(user)
 
         category = Category(name=test_category.name)
-        session.add(category)
+        async_session.add(category)
 
         task = Task(
             name=test_task.name,
@@ -74,25 +55,20 @@ async def prepare_database(test_user, test_task, test_category):
             category_id=test_task.category_id,
             creator_id=test_task.creator_id,
         )
-        session.add(task)
+        async_session.add(task)
 
-        await session.commit()
+        await async_session.commit()
 
     yield
 
-    async with engine_test.begin() as conn:
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-
-
-async def get_async_session_test() -> AsyncGenerator[AsyncSession, None]:
-    async with test_async_session_maker() as test_session:
-        yield test_session
 
 
 @pytest.fixture
 async def session():
-    async with test_async_session_maker() as test_session:
-        yield test_session
+    async with async_session_maker() as async_session:
+        yield async_session
 
 
 # async client for testing
@@ -169,8 +145,6 @@ def redis_bl():
 
 @pytest.fixture(autouse=True, scope="session")
 def override_dependencies():
-    app.dependency_overrides[get_settings] = get_settings_test
-    app.dependency_overrides[get_auth_settings] = get_auth_settings_test
-    app.dependency_overrides[get_async_session] = get_async_session_test
+    # app.dependency_overrides[get_async_session] = get_async_session_test
     app.dependency_overrides[get_redis_cache] = get_redis_cache_test
     app.dependency_overrides[get_redis_blacklist] = get_redis_blacklist_test
