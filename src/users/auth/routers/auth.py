@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
+from src.users.auth.schemas import LogoutResponse, RefreshToken, Tokens, UserLogin
 from src.users.dependencies import AuthServiceDep, CurrentUserDep
-from src.users.auth.schemas import Tokens, RefreshToken, UserLogin, LogoutResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

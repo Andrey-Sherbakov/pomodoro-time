@@ -7,7 +7,7 @@ from src.core import Base
 class User(Base):
     __tablename__ = "users"
 
-    username: Mapped[int] = mapped_column(String(100), index=True, unique=True)
+    username: Mapped[str] = mapped_column(String(100), index=True, unique=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     hashed_password: Mapped[str] = mapped_column(String(100))
     full_name: Mapped[str | None] = mapped_column(String(100))

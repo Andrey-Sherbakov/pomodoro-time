@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from src.tasks.schemas import CategoryDb, CategoryCreate
 from src.tasks.dependencies import CategoryServiceDep
+from src.tasks.schemas import CategoryCreate, CategoryDb
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -12,8 +12,8 @@ async def get_all_categories(service: CategoryServiceDep) -> list[CategoryDb]:
 
 
 @router.post("/", response_model=CategoryDb)
-async def create_category(new_category: CategoryCreate, service: CategoryServiceDep) -> CategoryDb:
-    return await service.create(new_category)
+async def create_category(body: CategoryCreate, service: CategoryServiceDep) -> CategoryDb:
+    return await service.create(body)
 
 
 @router.get("/{cat_id}", response_model=CategoryDb)
@@ -23,9 +23,9 @@ async def get_one_category(cat_id: int, service: CategoryServiceDep) -> Category
 
 @router.put("/{cat_id}", response_model=CategoryDb)
 async def update_category(
-    cat_id: int, updated_category: CategoryCreate, service: CategoryServiceDep
+    cat_id: int, body: CategoryCreate, service: CategoryServiceDep
 ) -> CategoryDb:
-    return await service.update_by_id(cat_id, updated_category)
+    return await service.update_by_id(cat_id, body)
 
 
 @router.delete("/{cat_id}", response_model=CategoryDb)

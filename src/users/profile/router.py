@@ -2,11 +2,11 @@ from fastapi import APIRouter
 
 from src.users.dependencies import CurrentUserDep, UserServiceDep
 from src.users.profile.schemas import (
-    UserDb,
-    UserCreate,
-    UserUpdate,
     PasswordUpdate,
     PasswordUpdateResponse,
+    UserCreate,
+    UserDb,
+    UserUpdate,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])

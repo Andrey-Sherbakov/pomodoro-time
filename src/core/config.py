@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from passlib.context import CryptContext
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -33,16 +35,13 @@ class Settings(BaseSettings):
             f"{self.DB_PORT}/{self.DB_NAME}"
         )
 
+
+class MainSettings(Settings):
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
-
-
-settings = Settings()
 
 
 class AuthSettings(BaseSettings):
     FRONTEND_URL: str
-
-    model_config = SettingsConfigDict(env_file=".env", extra="allow")
 
     # google
     GOOGLE_CLIENT_ID: str
@@ -74,4 +73,15 @@ class AuthSettings(BaseSettings):
         )
 
 
-auth_settings = AuthSettings()
+class MainAuthSettings(AuthSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="allow")
+
+
+@lru_cache
+def get_settings() -> MainSettings:
+    return MainSettings()
+
+
+@lru_cache
+def get_auth_settings() -> MainAuthSettings:
+    return MainAuthSettings()

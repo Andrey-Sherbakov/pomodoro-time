@@ -4,7 +4,7 @@ from typing import Sequence
 from sqlalchemy import select
 
 from src.core.repository import IRepository, ORMRepository
-from src.tasks.models import Task, Category
+from src.tasks.models import Category, Task
 
 
 class ITaskRepository(IRepository[Task], ABC):

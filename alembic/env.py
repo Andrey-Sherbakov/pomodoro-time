@@ -13,8 +13,9 @@ from alembic import context
 config = context.config
 
 # setting database url from environment
-from src.core import settings
+from src.core.config import get_settings
 
+settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # Interpret the config file for Python logging.

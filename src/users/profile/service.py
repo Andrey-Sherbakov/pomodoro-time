@@ -6,26 +6,26 @@ from slugify import slugify
 from src.core import SessionServiceBase
 from src.users.auth.exceptions import ProviderError
 from src.users.auth.schemas import (
-    UserPayload,
-    UserDataType,
-    Provider,
     GoogleUserData,
+    Provider,
+    UserDataType,
+    UserPayload,
     YandexUserData,
 )
 from src.users.auth.services.security import SecurityService, TokenBlacklistService
 from src.users.profile.exceptions import (
-    UsernameAlreadyExists,
     EmailAlreadyExists,
     InvalidPassword,
+    UsernameAlreadyExists,
 )
 from src.users.profile.models import User
 from src.users.profile.repository import UserRepository
 from src.users.profile.schemas import (
+    PasswordUpdate,
+    UserCreate,
     UserDb,
     UserToDb,
-    UserCreate,
     UserUpdate,
-    PasswordUpdate,
 )
 
 

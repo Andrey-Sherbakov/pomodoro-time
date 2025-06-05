@@ -1,5 +1,5 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator, model_validator
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
+from pydantic_core.core_schema import ValidationInfo
 
 
 class BaseUser(BaseModel):
@@ -14,7 +14,7 @@ class UserCreate(BaseUser):
     password_confirm: str
 
     @field_validator("password_confirm")
-    def password_match(cls, v, info: FieldValidationInfo):
+    def password_match(cls, v, info: ValidationInfo):
         if "password" in info.data and v != info.data["password"]:
             raise ValueError("passwords do not match")
         return v
@@ -50,7 +50,7 @@ class PasswordUpdate(BaseModel):
     new_password_confirm: str
 
     @field_validator("new_password_confirm")
-    def password_match(cls, v, info: FieldValidationInfo):
+    def password_match(cls, v, info: ValidationInfo):
         if "new_password" in info.data and v != info.data["new_password"]:
             raise ValueError("passwords do not match")
         return v
