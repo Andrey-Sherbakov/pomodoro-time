@@ -1,17 +1,19 @@
 from dataclasses import dataclass
 
 from src.core import SessionServiceBase
-from src.tasks.cache import TaskCache
+from src.tasks.services.cache import TaskCacheService
 from src.tasks.exceptions import TaskNameAlreadyExists
 from src.tasks.models import Task
 from src.tasks.repository import CategoryRepository, TaskRepository
 from src.tasks.schemas import TaskCreate, TaskDb
+from src.users.auth.exceptions import AccessDenied
+from src.users.auth.schemas import Payload
 
 
 @dataclass
 class TaskService(SessionServiceBase):
     task_repo: TaskRepository
-    task_cache: TaskCache
+    task_cache: TaskCacheService
     cat_repo: CategoryRepository
 
     async def get_all(self) -> list[TaskDb]:
@@ -28,9 +30,7 @@ class TaskService(SessionServiceBase):
     async def create(self, new_task: TaskCreate, creator_id: int) -> TaskDb:
         await self._validate_name(new_task.name)
 
-        task = await self.task_repo.add(
-            Task(creator_id=creator_id, **new_task.model_dump())
-        )
+        task = await self.task_repo.add(Task(creator_id=creator_id, **new_task.model_dump()))
 
         await self.session.commit()
         await self.task_cache.delete_all_tasks()
@@ -42,9 +42,13 @@ class TaskService(SessionServiceBase):
         return TaskDb.model_validate(task)
 
     async def update_by_id(
-        self, task_id: int, updated_task: TaskCreate
+        self, task_id: int, updated_task: TaskCreate, current_user: Payload
     ) -> TaskDb:
         task = await self.task_repo.get_by_id_or_404(task_id)
+
+        if not current_user.is_admin or current_user.id != task.creator_id:
+            raise AccessDenied
+
         for key, value in updated_task.model_dump().items():
             setattr(task, key, value)
 
@@ -54,8 +58,11 @@ class TaskService(SessionServiceBase):
 
         return TaskDb.model_validate(task)
 
-    async def delete_by_id(self, task_id: int) -> None:
+    async def delete_by_id(self, task_id: int, current_user: Payload) -> None:
         task = await self.task_repo.get_by_id_or_404(task_id)
+
+        if not current_user.is_admin or current_user.id != task.creator_id:
+            raise AccessDenied
 
         await self.task_repo.delete(task)
         await self.session.commit()

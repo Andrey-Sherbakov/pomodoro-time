@@ -25,13 +25,17 @@ async def get_one_task(task_id: int, service: TaskServiceDep) -> TaskDb:
 
 
 @router.put("/{task_id}", response_model=TaskDb)
-async def update_task(task_id: int, body: TaskCreate, service: TaskServiceDep) -> TaskDb:
-    return await service.update_by_id(task_id, body)
+async def update_task(
+    task_id: int, body: TaskCreate, service: TaskServiceDep, current_user: CurrentUserDep
+) -> TaskDb:
+    return await service.update_by_id(task_id, body, current_user)
 
 
 @router.delete("/{task_id}", response_model=TaskDeleteResponse)
-async def delete_task(task_id: int, service: TaskServiceDep) -> TaskDeleteResponse:
-    await service.delete_by_id(task_id)
+async def delete_task(
+    task_id: int, service: TaskServiceDep, current_user: CurrentUserDep
+) -> TaskDeleteResponse:
+    await service.delete_by_id(task_id, current_user)
     return TaskDeleteResponse()
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from src.tasks.cache import TaskCache
+from src.tasks.services.cache import TaskCache
 
 
 @pytest.fixture

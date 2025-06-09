@@ -7,4 +7,5 @@ from src.core.dependencies import (
     SettingsDep,
     AuthSettingsDep,
 )
-from src.core.service import SessionServiceBase
+from src.core.service import SessionServiceBase, RedisServiceBase
+from src.core.config import get_settings

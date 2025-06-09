@@ -95,11 +95,9 @@ class TestUpdate:
         assert task.category_id == task_from_db.category_id == task_create.category_id
         assert task.creator_id == task_from_db.creator_id
 
-    async def test_fail(self, ac: AsyncClient, task_random: Task, task_create, bearer):
+    async def test_fail(self, ac: AsyncClient, test_task, task_random: Task, task_create, bearer):
         response = await ac.put(
-            f"/api/tasks/{task_random.id}",
-            json=task_create.model_dump(),
-            headers=bearer,
+            f"/api/tasks/{task_random.id}", json=task_create.model_dump(), headers=bearer
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json()["detail"] == f"There is no {Task.__name__.lower()} with requested id"

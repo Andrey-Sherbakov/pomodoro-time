@@ -32,7 +32,7 @@ dev-db-up: ## Start docker containers with dev postgres and redis
 
 dev-db-down: ## Close docker containers with dev postgres and redis
 	@echo "Dev database containers closing"
-	docker compose -f docker-compose.dev.yml down
+	docker compose -f docker-compose.dev.yml --env-file .dev.env down
 
 test-db-up: ## Start docker containers with test postgres and redis
 	@echo "Test database containers starting"
@@ -40,7 +40,7 @@ test-db-up: ## Start docker containers with test postgres and redis
 
 test-db-down: ## Close docker containers with test postgres and redis
 	@echo "Test database containers closing"
-	docker compose -f docker-compose.test.yml down
+	docker compose -f docker-compose.test.yml --env-file .test.env down
 
 help: ## Show this help message
 	@echo "Usage: make [command]"

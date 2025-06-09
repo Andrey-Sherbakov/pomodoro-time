@@ -23,6 +23,15 @@ services:
     volumes:
       - pomodoro_redis:/data
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-container
+    ports:
+      - ${RABBIT_PORT}:5672
+      - ${RABBIT_MANAGEMENT_PORT}:15672
+    networks:
+      - pomodoro-net
+
 networks:
   pomodoro-net:
     driver: bridge

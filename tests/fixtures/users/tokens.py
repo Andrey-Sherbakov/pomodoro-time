@@ -15,7 +15,7 @@ def encode(payload: dict, settings: Settings) -> str:
 class TestTokens(BaseModel):
     access_token: str
     access_token_exp: str
-    another_access_token: str
+    admin_access_token: str
     refresh_token: str
     refresh_token_exp: str
 
@@ -44,13 +44,14 @@ def test_tokens(test_user, settings) -> TestTokens:
     access_payload_exp = access_payload.model_copy()
     access_payload_exp.exp = int(datetime.datetime.now(datetime.UTC).timestamp())
 
-    another_access_payload = access_payload.model_copy()
-    another_access_payload.jti = "backup_test_jti"
+    admin_access_payload = access_payload.model_copy()
+    admin_access_payload.is_admin = True
+    admin_access_payload.jti = "backup_test_jti"
 
     return TestTokens(
         access_token=encode(access_payload.model_dump(), settings),
         access_token_exp=encode(access_payload_exp.model_dump(), settings),
-        another_access_token=encode(another_access_payload.model_dump(), settings),
+        admin_access_token=encode(admin_access_payload.model_dump(), settings),
         refresh_token=encode(refresh_payload.model_dump(), settings),
         refresh_token_exp=encode(refresh_payload_exp.model_dump(), settings),
     )
@@ -63,5 +64,5 @@ def bearer(test_tokens):
 
 
 @pytest.fixture
-def another_bearer(test_tokens):
-    return {"Authorization": f"Bearer {test_tokens.another_access_token}"}
+def admin_bearer(test_tokens):
+    return {"Authorization": f"Bearer {test_tokens.admin_access_token}"}

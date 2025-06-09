@@ -24,8 +24,12 @@ class TestGetAll:
 
 
 class TestCreate:
-    async def test_success(self, ac: AsyncClient, category_create, category_repository):
-        response = await ac.post("/api/categories/", json=category_create.model_dump())
+    async def test_success(
+        self, ac: AsyncClient, category_create, category_repository, admin_bearer
+    ):
+        response = await ac.post(
+            "/api/categories/", json=category_create.model_dump(), headers=admin_bearer
+        )
         assert response.status_code == status.HTTP_201_CREATED
 
         category_resp = CategoryDb(**response.json())
@@ -35,9 +39,11 @@ class TestCreate:
         assert category_from_db.id == category_resp.id
         assert category_from_db.name == category_resp.name == category_create.name
 
-    async def test_exists(self, ac: AsyncClient, test_category, bearer):
+    async def test_exists(self, ac: AsyncClient, test_category, admin_bearer):
         category_data = CategoryCreate(name=test_category.name)
-        response = await ac.post("/api/categories/", json=category_data.model_dump())
+        response = await ac.post(
+            "/api/categories/", json=category_data.model_dump(), headers=admin_bearer
+        )
 
         assert response.status_code == status.HTTP_409_CONFLICT
         assert response.json()["detail"] == "Category with this name already exists"
@@ -63,10 +69,12 @@ class TestGetOne:
 
 class TestUpdate:
     async def test_success(
-        self, ac: AsyncClient, category_create, test_category, category_repository
+        self, ac: AsyncClient, category_create, test_category, category_repository, admin_bearer
     ):
         response = await ac.put(
-            f"/api/categories/{test_category.id}", json=category_create.model_dump()
+            f"/api/categories/{test_category.id}",
+            json=category_create.model_dump(),
+            headers=admin_bearer,
         )
         assert response.status_code == status.HTTP_200_OK
 
@@ -76,9 +84,13 @@ class TestUpdate:
         assert category_resp.name == category_from_db.name == category_create.name
         assert category_from_db.id == test_category.id
 
-    async def test_fail(self, ac: AsyncClient, category_random: Category, category_create):
+    async def test_fail(
+        self, ac: AsyncClient, category_random: Category, category_create, admin_bearer
+    ):
         response = await ac.put(
-            f"/api/categories/{category_random.id}", json=category_create.model_dump()
+            f"/api/categories/{category_random.id}",
+            json=category_create.model_dump(),
+            headers=admin_bearer,
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert (
@@ -88,8 +100,8 @@ class TestUpdate:
 
 
 class TestDelete:
-    async def test_success(self, ac: AsyncClient, test_category, category_repository):
-        response = await ac.delete(f"/api/categories/{test_category.id}")
+    async def test_success(self, ac: AsyncClient, test_category, category_repository, admin_bearer):
+        response = await ac.delete(f"/api/categories/{test_category.id}", headers=admin_bearer)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["detail"] == "Category successfully deleted"
 
