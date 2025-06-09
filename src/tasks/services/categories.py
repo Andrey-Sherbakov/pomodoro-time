@@ -5,22 +5,35 @@ from src.tasks.exceptions import CategoryNameAlreadyExists
 from src.tasks.models import Category
 from src.tasks.repository import CategoryRepository
 from src.tasks.schemas import CategoryCreate, CategoryDb
+from src.tasks.services.cache import CategoryCacheService
+from src.users.auth.exceptions import AccessDenied
+from src.users.auth.schemas import Payload
 
 
 @dataclass
 class CategoryService(SessionServiceBase):
     cat_repo: CategoryRepository
+    cat_cache: CategoryCacheService
 
     async def get_all(self) -> list[CategoryDb]:
-        categories = await self.cat_repo.list()
+        if cached_categories := await self.cat_cache.get_all_categories():
+            return cached_categories
 
-        return [CategoryDb.model_validate(category) for category in categories]
+        categories_from_db = await self.cat_repo.list()
+        categories = [CategoryDb.model_validate(category) for category in categories_from_db]
+        await self.cat_cache.set_all_categories(categories)
 
-    async def create(self, new_category: CategoryCreate) -> CategoryDb:
+        return categories
+
+    async def create(self, new_category: CategoryCreate, current_user: Payload) -> CategoryDb:
+        if not current_user.is_admin:
+            raise AccessDenied
+
         await self._validate_name(new_category.name)
 
         category = await self.cat_repo.add(Category(**new_category.model_dump()))
         await self.session.commit()
+        await self.cat_cache.delete_all_categories()
 
         return CategoryDb.model_validate(category)
 
@@ -29,21 +42,31 @@ class CategoryService(SessionServiceBase):
 
         return CategoryDb.model_validate(category)
 
-    async def update_by_id(self, cat_id: int, updated_category: CategoryCreate) -> CategoryDb:
+    async def update_by_id(
+        self, cat_id: int, updated_category: CategoryCreate, current_user: Payload
+    ) -> CategoryDb:
+        if not current_user.is_admin:
+            raise AccessDenied
+
         category = await self.cat_repo.get_by_id_or_404(cat_id)
         for key, value in updated_category.model_dump().items():
             setattr(category, key, value)
 
         category = await self.cat_repo.update(category)
         await self.session.commit()
+        await self.cat_cache.delete_all_categories()
 
         return CategoryDb.model_validate(category)
 
-    async def delete_by_id(self, cat_id: int) -> None:
+    async def delete_by_id(self, cat_id: int, current_user: Payload) -> None:
+        if not current_user.is_admin:
+            raise AccessDenied
+
         category = await self.cat_repo.get_by_id_or_404(cat_id)
 
         await self.cat_repo.delete(category)
         await self.session.commit()
+        await self.cat_cache.delete_all_categories()
 
     async def _validate_name(self, name: str) -> None:
         if await self.cat_repo.get_by_name(name):

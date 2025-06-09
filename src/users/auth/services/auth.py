@@ -66,7 +66,7 @@ class OAuthService:
     async def auth(self, code: str) -> Tokens:
         user_data = await self.client.get_user_info(code)
 
-        user = await self.user_service.create_user_from_oauth(user_data, Provider.google)
+        user = await self.user_service.create_user_from_oauth(user_data, self.provider)
 
         tokens = self.security.create_tokens(UserPayload.model_validate(user))
         return tokens
@@ -78,9 +78,7 @@ class OAuthService:
 
 class GoogleService(OAuthService):
     client: GoogleClient
-    provider: Provider.google
 
 
 class YandexService(OAuthService):
     client: YandexClient
-    provider: Provider.yandex

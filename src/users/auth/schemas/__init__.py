@@ -7,6 +7,7 @@ from src.users.auth.schemas.auth import (
     RefreshToken,
     LogoutResponse,
     UserLogin,
+    Payload,
 )
 from src.users.auth.schemas.socials import (
     Provider,

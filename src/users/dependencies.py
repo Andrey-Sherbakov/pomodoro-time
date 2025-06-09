@@ -14,6 +14,7 @@ from src.users.auth.services import (
     TokenBlacklistService,
     YandexService,
 )
+from src.users.clients import MailClient
 from src.users.profile.repository import UserRepository
 from src.users.profile.service import UserService
 
@@ -61,6 +62,7 @@ async def get_user_service(
         user_repo=UserRepository(session=session),
         token_bl=token_bl,
         security=security,
+        mail_client=MailClient(),
     )
 
 

@@ -10,7 +10,7 @@ class Task(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     pomodoro_count: Mapped[int] = mapped_column(default=10)
     category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"))
-    creator_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    creator_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
     category: Mapped["Category"] = relationship(back_populates="tasks")
     creator: Mapped["User"] = relationship(back_populates="tasks")  # noqa: F821

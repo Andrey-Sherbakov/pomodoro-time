@@ -2,6 +2,7 @@ import os
 from functools import lru_cache
 
 from passlib.context import CryptContext
+from pydantic import EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +29,18 @@ class Settings(BaseSettings):
     REDIS_DB: int
     REDIS_BLACKLIST_DB: int
     DEFAULT_CACHE_SECONDS: int
+
+    # celery settings
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
+    # email settings
+    MAIL_USER: EmailStr
+    MAIL_PASSWORD: str
+    MAIL_PORT: int
+    MAIL_HOST: str
+    MAIL_TLS: bool
+    MAIL_USERNAME: str
 
     @property
     def DATABASE_URL(self) -> str:

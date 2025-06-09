@@ -13,6 +13,7 @@ from src.users.auth.schemas import (
     YandexUserData,
 )
 from src.users.auth.services.security import SecurityService, TokenBlacklistService
+from src.users.clients import MailClient
 from src.users.profile.exceptions import (
     EmailAlreadyExists,
     InvalidPassword,
@@ -34,6 +35,7 @@ class UserService(SessionServiceBase):
     user_repo: UserRepository
     token_bl: TokenBlacklistService
     security: SecurityService
+    mail_client: MailClient
 
     async def get_current_user(self, current_user: UserPayload) -> UserDb:
         user = await self.user_repo.get_by_id_or_404(current_user.id)
@@ -51,6 +53,8 @@ class UserService(SessionServiceBase):
 
         await self.commit()
 
+        await self.mail_client.send_welcome_email(username=user.username, email=user.email)
+
         return UserDb.model_validate(user)
 
     async def create_superuser(self, body: UserCreate) -> UserDb:
@@ -64,6 +68,8 @@ class UserService(SessionServiceBase):
         user = await self.user_repo.add(User(**user_to_db.model_dump()))
 
         await self.commit()
+
+        await self.mail_client.send_welcome_email(username=user.username, email=user.email)
 
         return UserDb.model_validate(user)
 
@@ -92,6 +98,7 @@ class UserService(SessionServiceBase):
 
         await self.commit()
         await self.token_bl.set_logout_timestamp(user.id)
+        await self.mail_client.send_password_change_email(username=user.username, email=user.email)
 
     async def delete_user(self, user_id: int) -> None:
         user = await self.user_repo.get_by_id_or_404(user_id)
@@ -99,6 +106,7 @@ class UserService(SessionServiceBase):
         await self.user_repo.delete(user)
         await self.commit()
         await self.token_bl.set_logout_timestamp(user.id)
+        await self.mail_client.send_goodbye_email(username=user.username, email=user.email)
 
     async def create_user_from_oauth(self, user_data: UserDataType, provider: Provider) -> User:
         if user := await self.user_repo.get_by_email(email=str(user_data.email)):
@@ -113,6 +121,9 @@ class UserService(SessionServiceBase):
 
         user = await self.user_repo.add(User(**user_to_db.model_dump()))
         await self.commit()
+
+        await self.mail_client.send_welcome_email(username=user.username, email=user.email)
+
         return user
 
     async def _user_from_google_to_db(self, user_data: GoogleUserData) -> UserToDb:
