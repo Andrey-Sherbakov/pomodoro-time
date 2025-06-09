@@ -27,8 +27,8 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq-container
     ports:
-      - ${RABBIT_PORT1}:5672
-      - ${RABBIT_PORT2}:15672
+      - ${RABBIT_PORT}:5672
+      - ${RABBIT_MANAGEMENT_PORT}:15672
     networks:
       - pomodoro-net
 
