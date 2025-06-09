@@ -57,6 +57,12 @@ class PasswordUpdate(BaseModel):
         return v
 
 
+class EmailBody(BaseModel):
+    subject: str
+    message: str
+    recipients: list[EmailStr]
+
+
 class PasswordUpdateResponse(BaseModel):
     detail: str = "Password successfully updated, please login again"
 

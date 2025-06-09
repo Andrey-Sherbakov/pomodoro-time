@@ -13,7 +13,7 @@ from src.users.auth.schemas import (
     YandexUserData,
 )
 from src.users.auth.services.security import SecurityService, TokenBlacklistService
-from src.users.clients import MailClient
+from src.users.profile.clients import MailClient
 from src.users.profile.exceptions import (
     EmailAlreadyExists,
     InvalidPassword,

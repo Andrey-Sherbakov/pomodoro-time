@@ -1,4 +1,4 @@
-from src.core.database import lifespan, Base
+from src.core.database import Base
 from src.core.dependencies import (
     SessionDep,
     AsyncClientDep,
@@ -6,6 +6,7 @@ from src.core.dependencies import (
     RedisBlacklistDep,
     SettingsDep,
     AuthSettingsDep,
+    PublisherChannelDep,
 )
 from src.core.service import SessionServiceBase, RedisServiceBase
 from src.core.config import get_settings

@@ -1,9 +1,20 @@
-from worker.celery import send_email_task
+import json
+import uuid
+from dataclasses import dataclass
+
+import aio_pika
+from aio_pika.abc import AbstractRobustChannel
+
+from src.core.config import Settings
+from src.users.profile.schemas import EmailBody
 
 
+@dataclass
 class MailClient:
-    @staticmethod
-    async def send_welcome_email(username: str, email: str) -> None:
+    channel: AbstractRobustChannel
+    settings: Settings
+
+    async def send_welcome_email(self, username: str, email: str) -> None:
         subject = "Добро пожаловать!"
 
         message = (
@@ -16,10 +27,14 @@ class MailClient:
             f"Команда Pomodoro"
         )
 
-        send_email_task.delay(recipients=[email], subject=subject, body=message)
+        email_body = EmailBody(
+            subject=subject,
+            message=message,
+            recipients=[email],
+        )
+        await self._send_email(email_body)
 
-    @staticmethod
-    async def send_password_change_email(username: str, email: str) -> None:
+    async def send_password_change_email(self, username: str, email: str) -> None:
         subject = "Ваш пароль был изменен"
 
         message = (
@@ -32,10 +47,14 @@ class MailClient:
             f"Команда Pomodoro"
         )
 
-        send_email_task.delay(recipients=[email], subject=subject, body=message)
+        email_body = EmailBody(
+            subject=subject,
+            message=message,
+            recipients=[email],
+        )
+        await self._send_email(email_body)
 
-    @staticmethod
-    async def send_goodbye_email(username: str, email: str) -> None:
+    async def send_goodbye_email(self, username: str, email: str) -> None:
         subject = "Ваш аккаунт был удален"
 
         message = (
@@ -49,4 +68,22 @@ class MailClient:
             f"Команда Pomodoro\n"
         )
 
-        send_email_task.delay(recipients=[email], subject=subject, body=message)
+        email_body = EmailBody(
+            subject=subject,
+            message=message,
+            recipients=[email],
+        )
+        await self._send_email(email_body)
+
+    async def _send_email(self, email_body: EmailBody) -> None:
+        await self.channel.declare_queue(self.settings.BROKER_MAIL_ROUTING_KEY, durable=True)
+
+        message = aio_pika.Message(
+            body=json.dumps(email_body.model_dump()).encode(),
+            correlation_id=str(uuid.uuid4()),
+            reply_to=self.settings.BROKER_CALLBACK_ROUTING_KEY,
+        )
+        await self.channel.default_exchange.publish(
+            message=message,
+            routing_key=self.settings.BROKER_MAIL_ROUTING_KEY,
+        )

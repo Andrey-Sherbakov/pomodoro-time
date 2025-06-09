@@ -3,7 +3,14 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.core import AsyncClientDep, AuthSettingsDep, RedisBlacklistDep, SessionDep, SettingsDep
+from src.core import (
+    AsyncClientDep,
+    AuthSettingsDep,
+    PublisherChannelDep,
+    RedisBlacklistDep,
+    SessionDep,
+    SettingsDep,
+)
 from src.users.auth.clients import GoogleClient, YandexClient
 from src.users.auth.exceptions import AuthorizationError, TokenError
 from src.users.auth.schemas import AccessTokenPayload, Provider, TokenType, UserPayload
@@ -14,9 +21,19 @@ from src.users.auth.services import (
     TokenBlacklistService,
     YandexService,
 )
-from src.users.clients import MailClient
+from src.users.profile.clients import MailClient
 from src.users.profile.repository import UserRepository
 from src.users.profile.service import UserService
+
+
+# mail client dependency
+async def get_mail_client(
+    publisher_channel: PublisherChannelDep, settings: SettingsDep
+) -> MailClient:
+    return MailClient(channel=publisher_channel, settings=settings)
+
+
+MailClientDep = Annotated[MailClient, Depends(get_mail_client)]
 
 
 # security dependencies
@@ -55,14 +72,17 @@ AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 
 
 async def get_user_service(
-    session: SessionDep, security: SecurityServiceDep, token_bl: TokenBLServiceDep
+    session: SessionDep,
+    security: SecurityServiceDep,
+    token_bl: TokenBLServiceDep,
+    mail_client: MailClientDep,
 ) -> UserService:
     return UserService(
         session=session,
         user_repo=UserRepository(session=session),
         token_bl=token_bl,
         security=security,
-        mail_client=MailClient(),
+        mail_client=mail_client,
     )
 
 
