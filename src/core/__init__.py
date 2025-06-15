@@ -6,7 +6,7 @@ from src.core.dependencies import (
     RedisBlacklistDep,
     SettingsDep,
     AuthSettingsDep,
-    PublisherChannelDep,
+    BrokerClientDep,
 )
 from src.core.service import SessionServiceBase, RedisServiceBase
 from src.core.config import get_settings
