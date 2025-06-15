@@ -1,23 +1,19 @@
-import json
 import uuid
 from dataclasses import dataclass
 
-import aio_pika
-from aio_pika.abc import AbstractRobustChannel
 
-from src.core.config import Settings
+from src.core.broker import BrokerClient
 from src.users.profile.schemas import EmailBody
 
 
 @dataclass
 class MailClient:
-    channel: AbstractRobustChannel
-    settings: Settings
+    broker_client: BrokerClient
 
     async def send_welcome_email(self, username: str, email: str) -> None:
         subject = "Добро пожаловать!"
 
-        message = (
+        body = (
             f"Здравствуйте, {username}!\n"
             f"Добро пожаловать в Pomodoro Time!\n"
             f"Ваш аккаунт был успешно создан. Теперь вы можете войти в систему, используя свои "
@@ -27,17 +23,12 @@ class MailClient:
             f"Команда Pomodoro"
         )
 
-        email_body = EmailBody(
-            subject=subject,
-            message=message,
-            recipients=[email],
-        )
-        await self._send_email(email_body)
+        await self._send_text_email(subject=subject, body=body, email=email)
 
     async def send_password_change_email(self, username: str, email: str) -> None:
         subject = "Ваш пароль был изменен"
 
-        message = (
+        body = (
             f"Здравствуйте, {username}!\n"
             f"Это автоматическое уведомление о том, что пароль для вашего аккаунта в Pomodoro Time "
             f"был успешно изменен.\n"
@@ -47,17 +38,12 @@ class MailClient:
             f"Команда Pomodoro"
         )
 
-        email_body = EmailBody(
-            subject=subject,
-            message=message,
-            recipients=[email],
-        )
-        await self._send_email(email_body)
+        await self._send_text_email(subject=subject, body=body, email=email)
 
     async def send_goodbye_email(self, username: str, email: str) -> None:
         subject = "Ваш аккаунт был удален"
 
-        message = (
+        body = (
             f"Здравствуйте, {username}.\n"
             f"Это автоматическое уведомление подтверждает, что ваш аккаунт и все связанные с ним "
             f"данные в сервисе Pomodoro Time были успешно удалены согласно вашему запросу.\n"
@@ -68,22 +54,13 @@ class MailClient:
             f"Команда Pomodoro\n"
         )
 
+        await self._send_text_email(subject=subject, body=body, email=email)
+
+    async def _send_text_email(self, subject: str, body: str, email: str) -> None:
         email_body = EmailBody(
+            correlation_id=str(uuid.uuid4()),
             subject=subject,
-            message=message,
+            body=body,
             recipients=[email],
         )
-        await self._send_email(email_body)
-
-    async def _send_email(self, email_body: EmailBody) -> None:
-        await self.channel.declare_queue(self.settings.BROKER_MAIL_ROUTING_KEY, durable=True)
-
-        message = aio_pika.Message(
-            body=json.dumps(email_body.model_dump()).encode(),
-            correlation_id=str(uuid.uuid4()),
-            reply_to=self.settings.BROKER_CALLBACK_ROUTING_KEY,
-        )
-        await self.channel.default_exchange.publish(
-            message=message,
-            routing_key=self.settings.BROKER_MAIL_ROUTING_KEY,
-        )
+        await self.broker_client.send_mail(email_body.model_dump())
