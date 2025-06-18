@@ -82,13 +82,13 @@ class AuthSettings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    environment = os.environ.get("ENVIRONMENT", "dev")
+    environment = os.environ.get("ENVIRONMENT", "local")
     env_file = f".{environment.lower()}.env"
     return Settings(_env_file=env_file)
 
 
 @lru_cache
 def get_auth_settings() -> AuthSettings:
-    environment = os.environ.get("ENVIRONMENT", "dev")
+    environment = os.environ.get("ENVIRONMENT", "local")
     env_file = f".{environment.lower()}.env"
     return AuthSettings(_env_file=env_file)

@@ -4,6 +4,7 @@ HOST ?= 127.0.0.1
 PORT ?= 8000
 M ?= migration
 
+# FastAPI
 run: ## Run the application using uvicorn with provided arguments or defaults
 	uv run uvicorn src.main:app --host $(HOST) --port $(PORT) --reload
 
@@ -26,22 +27,40 @@ uninstall: ## Uninstall a dependency using poetry
 	@echo "Uninstalling dependency $(LIBRARY)"
 	uv remove $(LIBRARY)
 
-dev-db-up: ## Start docker containers with dev postgres and redis
-	@echo "Dev database containers starting"
-	docker compose -f docker-compose.dev.yml --env-file .dev.env up -d
+# Docker
+base-up: ## Start base docker containers with postgres, redis and broker
+	@echo "Base containers starting"
+	docker compose -f docker-compose.base.yml --env-file .local.env up -d
 
-dev-db-down: ## Close docker containers with dev postgres and redis
-	@echo "Dev database containers closing"
-	docker compose -f docker-compose.dev.yml --env-file .dev.env down
+base-down: ## Close base docker containers with postgres, redis and broker
+	@echo "Base containers closing"
+	docker compose -f docker-compose.base.yml --env-file .local.env down
 
-test-db-up: ## Start docker containers with test postgres and redis
+dev-build: ## Build docker dev containers
+	@echo "Building dev containers"
+	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env build
+
+dev-up: ## Start docker dev containers
+	@echo "Starting dev containers"
+	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env up -d
+
+dev-logs: ## Monitor logs in the app container
+	@echo "Starting app container monitoring"
+	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env logs -f app
+
+dev-down: ## Close docker dev containers
+	@echo "Closing dev containers"
+	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env down
+
+test-up: ## Start docker containers with test postgres and redis
 	@echo "Test database containers starting"
 	docker compose -f docker-compose.test.yml --env-file .test.env up -d
 
-test-db-down: ## Close docker containers with test postgres and redis
+test-down: ## Close docker containers with test postgres and redis
 	@echo "Test database containers closing"
 	docker compose -f docker-compose.test.yml --env-file .test.env down
 
+# Help
 help: ## Show this help message
 	@echo "Usage: make [command]"
 	@echo ""

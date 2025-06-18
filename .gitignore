@@ -1,5 +1,6 @@
 .venv
 __pycache__/
 .dev.env
+.local.env
 .test.env
 .idea

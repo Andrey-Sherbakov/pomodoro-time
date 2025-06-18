@@ -9,7 +9,7 @@ class TaskBase(BaseModel):
 
 class TaskDb(TaskBase):
     id: int
-    creator_id: int
+    creator_id: int | None
 
     model_config = ConfigDict(from_attributes=True)
 

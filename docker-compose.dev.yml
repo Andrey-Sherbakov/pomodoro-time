@@ -1,71 +1,19 @@
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: pomodoro-psql
+  app:
+    build: .
+    container_name: app
+    restart: always
+    command: [ "uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000" ]
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_DB=${DB_NAME}
+      - ENVIRONMENT=DEV
     ports:
-      - ${DB_PORT}:5432
-    volumes:
-      - pomodoro_psql:/var/lib/postgresql/data
+      - "8000:8000"
     networks:
       - pomodoro-net
-
-  redis:
-    image: redis:7.4-alpine
-    container_name: redis
-    ports:
-      - ${REDIS_PORT}:6379
-    networks:
-      - pomodoro-net
-    volumes:
-      - pomodoro_redis:/data
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.1
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.1
-    container_name: kafka
-    ports:
-      - "9092:9092"
-      - "29092:29092"  # internal for containers
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
-      - zookeeper
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    ports:
-      - "8080:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local-kafka
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-    depends_on:
-      - kafka
-      - zookeeper
-
-
-networks:
-  pomodoro-net:
-    driver: bridge
-
-volumes:
-  pomodoro_psql:
-  pomodoro_redis:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
