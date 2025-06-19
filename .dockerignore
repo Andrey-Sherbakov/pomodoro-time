@@ -2,6 +2,7 @@
 .idea
 .git
 .gitignore
+.github
 __pycache__/
 *.log
 Makefile
