@@ -104,8 +104,8 @@ class TestUpdate:
 
 
 class TestDelete:
-    async def test_success(self, ac: AsyncClient, test_task, task_repository):
-        response = await ac.delete(f"/api/tasks/{test_task.id}")
+    async def test_success(self, ac: AsyncClient, test_task, task_repository, bearer):
+        response = await ac.delete(f"/api/tasks/{test_task.id}", headers=bearer)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["detail"] == "Task successfully deleted"
 

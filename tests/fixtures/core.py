@@ -8,10 +8,16 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from src.core import Base
 from src.core.config import get_auth_settings, get_settings
-from src.core.dependencies import get_async_session, get_redis_blacklist, get_redis_cache
+from src.core.dependencies import (
+    get_async_session,
+    get_redis_blacklist,
+    get_redis_cache,
+    get_broker_client,
+)
 from src.main import app
 from src.tasks.models import Category, Task
 from src.users.profile.models import User
+from tests.fixtures.broker import fake_broker_client
 
 
 # test settings setup
@@ -150,8 +156,37 @@ def redis_bl():
     return REDIS_BLACKLIST
 
 
+# broker setup
+# BROKER_CLIENT: BrokerClient | None = None
+#
+#
+# @pytest.fixture(autouse=True)
+# async def prepare_broker():
+#     global BROKER_CLIENT
+#
+#     BROKER_CLIENT = BrokerClient(settings=test_settings)
+#     await BROKER_CLIENT.start()
+#
+#     yield
+#
+#     await BROKER_CLIENT.stop()
+#
+#
+# async def get_broker_client_test() -> BrokerClient:
+#     if BROKER_CLIENT is None:
+#         raise RuntimeError("Test broker client not initialized")
+#     return BROKER_CLIENT
+#
+#
+# @pytest.fixture
+# def broker_client():
+#     return BROKER_CLIENT
+
+
+# overriding all dependencies
 @pytest.fixture(autouse=True, scope="session")
 def override_dependencies():
     app.dependency_overrides[get_async_session] = get_async_session_test
     app.dependency_overrides[get_redis_cache] = get_redis_cache_test
     app.dependency_overrides[get_redis_blacklist] = get_redis_blacklist_test
+    app.dependency_overrides[get_broker_client] = fake_broker_client

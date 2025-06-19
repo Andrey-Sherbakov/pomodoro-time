@@ -55,4 +55,4 @@ async def delete_profile(
 @router.post("/send_email")
 async def send_email(username: str, email: str, service: UserServiceDep):
     await service.mail_client.send_welcome_email(username, email)
-    return {'status': status.HTTP_200_OK}
+    return {"status": status.HTTP_200_OK}

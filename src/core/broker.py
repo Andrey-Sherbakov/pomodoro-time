@@ -51,18 +51,18 @@ class BrokerClient:
         await self._consumer.start()
         self._consumer_task = asyncio.create_task(self._consume_loop())
 
-    async def _stop_consumer(self) -> None:
-        if self._consumer_task:
-            self._consumer_task.cancel()
-        if self._consumer:
-            await self._consumer.stop()
-
     async def _consume_loop(self) -> None:
         try:
             async for message in self._consumer:
                 await self.mail_callback_message_handler(message.value)
         except asyncio.CancelledError:
             pass
+
+    async def _stop_consumer(self) -> None:
+        if self._consumer_task:
+            self._consumer_task.cancel()
+        if self._consumer:
+            await self._consumer.stop()
 
 
 async def broker_startup(app: FastAPI, settings: Settings):

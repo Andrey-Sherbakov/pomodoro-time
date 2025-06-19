@@ -46,7 +46,7 @@ class TaskService(SessionServiceBase):
     ) -> TaskDb:
         task = await self.task_repo.get_by_id_or_404(task_id)
 
-        if not current_user.is_admin or current_user.id != task.creator_id:
+        if not (current_user.is_admin or current_user.id == task.creator_id):
             raise AccessDenied
 
         for key, value in updated_task.model_dump().items():
@@ -61,7 +61,7 @@ class TaskService(SessionServiceBase):
     async def delete_by_id(self, task_id: int, current_user: Payload) -> None:
         task = await self.task_repo.get_by_id_or_404(task_id)
 
-        if not current_user.is_admin or current_user.id != task.creator_id:
+        if not (current_user.is_admin or current_user.id == task.creator_id):
             raise AccessDenied
 
         await self.task_repo.delete(task)

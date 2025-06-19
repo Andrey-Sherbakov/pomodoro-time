@@ -6,12 +6,17 @@ from src.tasks.schemas import CategoryCreate, CategoryDb
 
 
 class TestGetAll:
-    async def test_success(
-        self, ac: AsyncClient, test_category, category_create, category_repository
-    ):
+    async def test_success(self, ac: AsyncClient, category_create, category_repository):
         response = await ac.get("/api/categories/")
         assert response.status_code == status.HTTP_200_OK
         assert isinstance(response.json(), list)
+        assert len(response.json()) == 1
+
+    async def test_cache(
+        self, ac: AsyncClient, category_create, category_repository, category_cache
+    ):
+        response = await ac.get("/api/categories/")
+        assert response.status_code == status.HTTP_200_OK
         assert len(response.json()) == 1
 
         await category_repository.add(Category(name=category_create.name))
@@ -19,8 +24,13 @@ class TestGetAll:
 
         second_response = await ac.get("/api/categories/")
         assert second_response.status_code == status.HTTP_200_OK
-        assert isinstance(second_response.json(), list)
-        assert len(second_response.json()) == 2
+        assert len(second_response.json()) == 1
+
+        await category_cache.delete_all_categories()
+
+        third_response = await ac.get("/api/categories/")
+        assert third_response.status_code == status.HTTP_200_OK
+        assert len(third_response.json()) == 2
 
 
 class TestCreate:

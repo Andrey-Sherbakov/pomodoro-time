@@ -41,4 +41,3 @@ class CategoryRepository(ORMRepository[Category], ICategoryRepository):
         stmt = select(Category).where(Category.name == name)
         category = await self.session.scalar(stmt)
         return category
-

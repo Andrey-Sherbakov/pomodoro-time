@@ -67,7 +67,7 @@ class TestRefresh:
 
 
 class TestLogout:
-    async def test_success(self, ac: AsyncClient, bearer, another_bearer):
+    async def test_success(self, ac: AsyncClient, bearer, admin_bearer):
         response = await ac.post("/api/auth/logout", headers=bearer)
 
         assert response.status_code == status.HTTP_200_OK
@@ -77,13 +77,13 @@ class TestLogout:
         assert second_response.status_code == status.HTTP_401_UNAUTHORIZED
         assert second_response.json()["detail"] == "Authorization required"
 
-        third_response = await ac.post("/api/auth/logout", headers=another_bearer)
+        third_response = await ac.post("/api/auth/logout", headers=admin_bearer)
         assert third_response.status_code == status.HTTP_200_OK
         assert third_response.json()["detail"] == "Successfully logged out"
 
 
 class TestLogoutAll:
-    async def test_success(self, ac: AsyncClient, bearer, another_bearer):
+    async def test_success(self, ac: AsyncClient, bearer, admin_bearer):
         response = await ac.post("/api/auth/logout-all", headers=bearer)
 
         assert response.status_code == status.HTTP_200_OK
@@ -93,6 +93,6 @@ class TestLogoutAll:
         assert second_response.status_code == status.HTTP_401_UNAUTHORIZED
         assert second_response.json()["detail"] == "Authorization required"
 
-        third_response = await ac.post("/api/auth/logout", headers=another_bearer)
+        third_response = await ac.post("/api/auth/logout", headers=admin_bearer)
         assert third_response.status_code == status.HTTP_401_UNAUTHORIZED
         assert third_response.json()["detail"] == "Authorization required"

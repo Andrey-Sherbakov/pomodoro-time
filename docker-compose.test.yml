@@ -8,34 +8,9 @@ services:
       - POSTGRES_DB=${DB_NAME}
     ports:
       - ${DB_PORT}:5432
-    volumes:
-      - pomodoro-psql-test:/var/lib/postgresql/data
-    networks:
-      - pomodoro-net-test
 
   redis-test:
     image: redis:7.4-alpine
     container_name: redis-container-test
     ports:
       - ${REDIS_PORT}:6379
-    volumes:
-      - pomodoro-redis-test:/data
-    networks:
-      - pomodoro-net-test
-
-  rabbitmq-test:
-    image: rabbitmq:3-management
-    container_name: rabbitmq-container-test
-    ports:
-      - ${RABBIT_PORT}:5672
-      - ${RABBIT_MANAGEMENT_PORT}:15672
-    networks:
-      - pomodoro-net-test
-
-networks:
-  pomodoro-net-test:
-    driver: bridge
-
-volumes:
-  pomodoro-psql-test:
-  pomodoro-redis-test:

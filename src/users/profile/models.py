@@ -14,4 +14,4 @@ class User(Base):
     age: Mapped[int | None]
     is_admin: Mapped[bool] = mapped_column(default=False)
 
-    tasks: Mapped[list["Task"]] = relationship(back_populates="creator")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="creator")  # noqa: F821
