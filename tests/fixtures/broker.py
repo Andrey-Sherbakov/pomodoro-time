@@ -1,5 +1,3 @@
-
-
 class FakeBrokerClient:
     async def send_mail(self, message: dict) -> None:
         pass

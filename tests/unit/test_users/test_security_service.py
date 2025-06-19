@@ -137,4 +137,3 @@ class TestSecurityService:
 
         assert self.test_access_token == decoded_access_token
         assert self.test_refresh_token == decoded_refresh_token
-

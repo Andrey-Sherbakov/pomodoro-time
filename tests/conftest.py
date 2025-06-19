@@ -8,6 +8,3 @@ pytest_plugins = [
     "tests.fixtures.tasks.repository",
     "tests.fixtures.core",
 ]
-
-
-
