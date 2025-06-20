@@ -36,13 +36,9 @@ base-down: ## Close base docker containers with postgres, redis and broker
 	@echo "Base containers closing"
 	docker compose -f docker-compose.base.yml --env-file .local.env down
 
-dev-build: ## Build docker dev containers
-	@echo "Building dev containers"
-	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env build
-
 dev-up: ## Start docker dev containers
 	@echo "Starting dev containers"
-	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env up -d
+	docker compose -f docker-compose.base.yml -f docker-compose.dev.yml --env-file .dev.env up -d --build
 
 dev-logs: ## Monitor logs in the app container
 	@echo "Starting app container monitoring"

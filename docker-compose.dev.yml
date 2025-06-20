@@ -7,7 +7,7 @@ services:
     environment:
       - ENVIRONMENT=DEV
     ports:
-      - "8000:8000"
+      - "80:8000"
     networks:
       - pomodoro-net
     depends_on:
