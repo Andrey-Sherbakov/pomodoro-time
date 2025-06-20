@@ -44,19 +44,6 @@ jobs:
       - name: Start test services
         run: docker compose -f docker-compose.test.yml --env-file .test.env up -d
 
-      - name: Wait for services to be ready
-        run: |
-          # Ждем пока PostgreSQL будет готов
-          until docker compose -f docker-compose.test.yml --env-file .test.env exec -T postgres pg_isready -U $DB_USER -d $DB_NAME; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-          
-          until docker compose -f docker-compose.test.yml --env-file .test.env exec -T redis redis-cli ping; do
-            echo "Waiting for Redis..."
-            sleep 2
-          done
-
       - name: Run pytest
         run: uv run pytest
 
