@@ -11,9 +11,6 @@ services:
     networks:
       - pomodoro-net
     depends_on:
-      kafka:
-        condition: service_healthy
-      postgres:
-        condition: service_started
-      redis:
-        condition: service_started
+      - kafka
+      - postgres
+      - redis
