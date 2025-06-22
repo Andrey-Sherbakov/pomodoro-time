@@ -5,11 +5,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.core import (
     AsyncClientDep,
-    AuthSettingsDep,
-    BrokerClientDep,
+    PublisherChannelDep,
     RedisBlacklistDep,
     SessionDep,
     SettingsDep,
+    AuthSettingsDep,
 )
 from src.users.auth.clients import GoogleClient, YandexClient
 from src.users.auth.exceptions import AuthorizationError, TokenError
@@ -27,9 +27,10 @@ from src.users.profile.service import UserService
 
 
 # mail client dependency
-async def get_mail_client(broker_client: BrokerClientDep) -> MailClient:
-    return MailClient(broker_client=broker_client)
-
+async def get_mail_client(
+    publisher_channel: PublisherChannelDep, settings: SettingsDep
+) -> MailClient:
+    return MailClient(channel=publisher_channel, settings=settings)
 
 MailClientDep = Annotated[MailClient, Depends(get_mail_client)]
 
