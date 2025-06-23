@@ -5,11 +5,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.core import (
     AsyncClientDep,
-    AuthSettingsDep,
     BrokerClientDep,
     RedisBlacklistDep,
     SessionDep,
     SettingsDep,
+    AuthSettingsDep,
 )
 from src.users.auth.clients import GoogleClient, YandexClient
 from src.users.auth.exceptions import AuthorizationError, TokenError

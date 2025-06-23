@@ -58,7 +58,6 @@ class PasswordUpdate(BaseModel):
 
 
 class EmailBody(BaseModel):
-    correlation_id: str
     subject: str
     body: str
     recipients: list[EmailStr]

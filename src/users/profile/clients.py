@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass
 
 
@@ -58,7 +57,6 @@ class MailClient:
 
     async def _send_text_email(self, subject: str, body: str, email: str) -> None:
         email_body = EmailBody(
-            correlation_id=str(uuid.uuid4()),
             subject=subject,
             body=body,
             recipients=[email],
