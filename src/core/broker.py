@@ -24,13 +24,6 @@ class BrokerClient:
     _queue: AbstractQueue | None = None
     _callback_queue: AbstractQueue | None = None
 
-    @staticmethod
-    async def default_message_handler(message: AbstractIncomingMessage):
-        async with message.process():
-            body = message.body.decode()
-            correlation_id = message.correlation_id
-            print(body, correlation_id)
-
     async def send_mail(self, body: dict):
         message = aio_pika.Message(
             body=json.dumps(body).encode(),
@@ -61,6 +54,13 @@ class BrokerClient:
             handler = self.message_handler
 
         await self._callback_queue.consume(handler)
+
+    @staticmethod
+    async def default_message_handler(message: AbstractIncomingMessage):
+        async with message.process():
+            body = message.body.decode()
+            correlation_id = message.correlation_id
+            print(f"body: {body}, correlation_id: {correlation_id}")
 
 
 async def broker_startup(
