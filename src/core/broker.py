@@ -60,7 +60,7 @@ class BrokerClient:
         async with message.process():
             body = message.body.decode()
             correlation_id = message.correlation_id
-            print(f"body: {body}, correlation_id: {correlation_id}")
+            print(f"{body}, correlation_id: {correlation_id}")
 
 
 async def broker_startup(
