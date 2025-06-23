@@ -7,7 +7,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
       - POSTGRES_DB=${DB_NAME}
     ports:
-      - "5432:5432"
+      - ${DB_PORT}:5432
     volumes:
       - pomodoro_psql:/var/lib/postgresql/data
     networks:
@@ -15,9 +15,9 @@ services:
 
   redis:
     image: redis:7.4-alpine
-    container_name: redis-container
+    container_name: redis
     ports:
-      - "6379:6379"
+      - ${REDIS_PORT}:6379
     networks:
       - pomodoro-net
     volumes:
@@ -25,15 +25,14 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbitmq-container
+    container_name: rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - ${RABBIT_PORT}:5672
+      - ${RABBIT_MANAGEMENT_PORT}:15672
     volumes:
-      - pomodoro_rabbitmq:/var/lib/rabbitmq  
+      - pomodoro_rabbitmq:/var/lib/rabbitmq
     networks:
-      - pomodoro-net  
-
+      - pomodoro-net
 
 
 networks:

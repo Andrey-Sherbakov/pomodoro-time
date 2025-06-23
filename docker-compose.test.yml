@@ -1,7 +1,7 @@
 services:
   postgres-test:
     image: postgres:17-alpine
-    container_name: pomodoro-psql-test
+    container_name: psql-test
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
@@ -11,6 +11,6 @@ services:
 
   redis-test:
     image: redis:7.4-alpine
-    container_name: redis-container-test
+    container_name: redis-test
     ports:
       - ${REDIS_PORT}:6379

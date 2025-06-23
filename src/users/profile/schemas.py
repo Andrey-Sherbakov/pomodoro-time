@@ -59,7 +59,7 @@ class PasswordUpdate(BaseModel):
 
 class EmailBody(BaseModel):
     subject: str
-    message: str
+    body: str
     recipients: list[EmailStr]
 
 

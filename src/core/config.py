@@ -33,7 +33,6 @@ class Settings(BaseSettings):
     BROKER_URL: str
     BROKER_MAIL_TOPIC: str
     BROKER_MAIL_CALLBACK_TOPIC: str
-    BROKER_GROUP_ID: str
 
     @property
     def DATABASE_URL(self) -> str:

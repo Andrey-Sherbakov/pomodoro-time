@@ -8,6 +8,6 @@ WORKDIR /pomodoro-time
 RUN pip install uv
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync
+RUN uv sync --locked
 
 COPY . .

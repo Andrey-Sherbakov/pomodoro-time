@@ -5,7 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.core import (
     AsyncClientDep,
-    PublisherChannelDep,
+    BrokerClientDep,
     RedisBlacklistDep,
     SessionDep,
     SettingsDep,
@@ -27,10 +27,9 @@ from src.users.profile.service import UserService
 
 
 # mail client dependency
-async def get_mail_client(
-    publisher_channel: PublisherChannelDep, settings: SettingsDep
-) -> MailClient:
-    return MailClient(channel=publisher_channel, settings=settings)
+async def get_mail_client(broker_client: BrokerClientDep) -> MailClient:
+    return MailClient(broker_client=broker_client)
+
 
 MailClientDep = Annotated[MailClient, Depends(get_mail_client)]
 
