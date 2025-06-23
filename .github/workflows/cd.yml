@@ -18,7 +18,7 @@ jobs:
 
       - name: Deploy to server via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no root@91.186.198.243 "
+          ssh -o StrictHostKeyChecking=no root@94.228.126.175 "
             cd pomodoro-time &&
             git pull &&
             make dev-down &&
