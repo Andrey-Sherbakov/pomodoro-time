@@ -11,7 +11,6 @@ from src.users.auth.schemas.auth import (
 )
 from src.users.auth.schemas.socials import (
     Provider,
-    UserDataType,
     UserData,
     GoogleUserData,
     YandexUserData,
@@ -29,7 +28,6 @@ __all__ = [
     UserLogin,
     Payload,
     Provider,
-    UserDataType,
     UserData,
     GoogleUserData,
     YandexUserData,

@@ -8,7 +8,7 @@ from src.users.auth.exceptions import ProviderError
 from src.users.auth.schemas import (
     GoogleUserData,
     Provider,
-    UserDataType,
+    UserData,
     UserPayload,
     YandexUserData,
 )
@@ -128,7 +128,9 @@ class UserService(SessionServiceBase):
         await self.token_bl.set_logout_timestamp(user.id)
         await self.mail_client.send_goodbye_email(username=user.username, email=user.email)
 
-    async def get_create_user_from_oauth(self, user_data: UserDataType, provider: Provider) -> User:
+    async def get_create_user_from_oauth[T: UserData](
+        self, user_data: T, provider: Provider
+    ) -> User:
         if user := await self.user_repo.get_by_email(email=str(user_data.email)):
             logger.info(f"OAuth user exists: username={user.username}, provider={provider.value}")
             return user

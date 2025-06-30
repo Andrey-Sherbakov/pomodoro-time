@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import TypeVar
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -11,9 +10,6 @@ class Provider(str, Enum):
 
 class UserData(BaseModel):
     email: EmailStr
-
-
-UserDataType = TypeVar("UserDataType", bound=UserData)
 
 
 class GoogleUserData(UserData):

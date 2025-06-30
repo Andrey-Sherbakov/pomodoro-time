@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from httpx import AsyncClient
 
 from src.core.config import AuthSettings
-from src.users.auth.schemas import GoogleUserData, Provider, UserDataType, YandexUserData
+from src.users.auth.schemas import GoogleUserData, Provider, UserData, YandexUserData
 
 
 @dataclass
@@ -12,7 +12,7 @@ class BaseClient:
     provider: Provider
     auth_settings: AuthSettings
 
-    async def get_user_info(self, code: str) -> UserDataType:
+    async def get_user_info[T: UserData](self, code: str) -> T:
         raise NotImplementedError()
 
     async def _get_user_access_token(self, code: str, provider: Provider) -> str:
