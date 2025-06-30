@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import jwt
 from redis.asyncio import Redis
 
+from src.core import logger
 from src.core.config import Settings
 from src.users.auth.exceptions import InvalidTokenType, TokenError, TokenExpired, TokenRevoked
 from src.users.auth.schemas import (
@@ -28,6 +29,8 @@ class TokenBlacklistService:
 
         await self.redis_bl.set(f"revoked:{jti}", "1", ex=ex_seconds)
 
+        logger.info(f"One pair of tokens revoked: jti={jti}")
+
     async def is_blacklisted(self, jti: str) -> bool:
         return await self.redis_bl.exists(f"revoked:{jti}") == 1
 
@@ -38,6 +41,8 @@ class TokenBlacklistService:
 
         now_ts = int(datetime.datetime.now(datetime.UTC).timestamp())
         await self.redis_bl.set(f"logout_ts:{user_id}", str(now_ts), ex=ex_seconds)
+
+        logger.info(f"All tokens revoked: user_id={user_id}")
 
     async def get_logout_timestamp(self, user_id: str) -> int | None:
         ts = await self.redis_bl.get(f"logout_ts:{user_id}")
@@ -56,15 +61,16 @@ class SecurityService:
         return self.settings.PWD_CONTEXT.verify(password, hashed_password)
 
     def get_token_expiration(self, token_type: TokenType) -> datetime:
+        expiration = datetime.datetime.now(datetime.UTC)
         if token_type == TokenType.access:
-            return (
-                datetime.datetime.now(datetime.UTC)
-                + datetime.timedelta(minutes=self.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-            ).timestamp()
-        return (
-            datetime.datetime.now(datetime.UTC)
-            + datetime.timedelta(days=self.settings.REFRESH_TOKEN_EXPIRE_DAYS)
-        ).timestamp()
+            expiration += datetime.timedelta(minutes=self.settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        elif token_type == TokenType.refresh:
+            expiration += datetime.timedelta(days=self.settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        else:
+            logger.error(f"Invalid token type: {token_type}")
+            raise InvalidTokenType
+
+        return expiration.timestamp()
 
     def create_token(self, payload: UserPayload, token_type: TokenType, jti: str) -> str:
         exp = int(self.get_token_expiration(token_type))
@@ -81,7 +87,7 @@ class SecurityService:
                 email=payload.email,
                 is_admin=payload.is_admin,
             )
-        else:
+        elif token_type == TokenType.refresh:
             token_payload = RefreshTokenPayload(
                 sub=str(payload.id),
                 exp=exp,
@@ -89,6 +95,9 @@ class SecurityService:
                 jti=jti,
                 type=token_type,
             )
+        else:
+            logger.error(f"Invalid token type: {token_type}")
+            raise InvalidTokenType
 
         encoded_jwt = jwt.encode(
             token_payload.model_dump(),
@@ -115,6 +124,7 @@ class SecurityService:
             )
 
             if payload["type"] != token_type.value:
+                logger.error(f"Invalid token type: {payload['type']}")
                 raise InvalidTokenType
 
             if token_type == TokenType.access:
@@ -123,15 +133,23 @@ class SecurityService:
                 token_payload = RefreshTokenPayload(**payload)
 
             if await self.token_bl.is_blacklisted(token_payload.jti):
+                logger.warning(
+                    f"Token has been revoked: sub={token_payload.sub}, type={token_type.value}"
+                )
                 raise TokenRevoked
 
             logout_ts = await self.token_bl.get_logout_timestamp(token_payload.sub)
             if logout_ts and logout_ts >= int(token_payload.iat):
+                logger.warning(
+                    f"Token has been revoked: sub={token_payload.sub}, type={token_type.value}"
+                )
                 raise TokenRevoked
 
             return token_payload
 
         except jwt.exceptions.ExpiredSignatureError:
+            logger.warning("Token expired")
             raise TokenExpired
         except jwt.exceptions.InvalidTokenError:
+            logger.warning("Error while decoding token")
             raise TokenError

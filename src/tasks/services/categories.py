@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
-from src.core import SessionServiceBase
+from src.core import SessionServiceBase, logger
 from src.tasks.exceptions import CategoryNameAlreadyExists
 from src.tasks.models import Category
 from src.tasks.repository import CategoryRepository
 from src.tasks.schemas import CategoryCreate, CategoryDb
 from src.tasks.services.cache import CategoryCacheService
 from src.users.auth.exceptions import AccessDenied
-from src.users.auth.schemas import Payload
+from src.users.auth.schemas import UserPayload
 
 
 @dataclass
@@ -17,6 +17,7 @@ class CategoryService(SessionServiceBase):
 
     async def get_all(self) -> list[CategoryDb]:
         if cached_categories := await self.cat_cache.get_all_categories():
+            logger.debug("Using cache")
             return cached_categories
 
         categories_from_db = await self.cat_repo.list()
@@ -25,8 +26,11 @@ class CategoryService(SessionServiceBase):
 
         return categories
 
-    async def create(self, new_category: CategoryCreate, current_user: Payload) -> CategoryDb:
+    async def create(self, new_category: CategoryCreate, current_user: UserPayload) -> CategoryDb:
         if not current_user.is_admin:
+            logger.info(
+                f"Category create failed: name={new_category.name}, reason=user {current_user.username} is not admin"
+            )
             raise AccessDenied
 
         await self._validate_name(new_category.name)
@@ -34,6 +38,8 @@ class CategoryService(SessionServiceBase):
         category = await self.cat_repo.add(Category(**new_category.model_dump()))
         await self.session.commit()
         await self.cat_cache.delete_all_categories()
+
+        logger.info(f"Category created: id={category.id}, name={category.name}")
 
         return CategoryDb.model_validate(category)
 
@@ -43,9 +49,12 @@ class CategoryService(SessionServiceBase):
         return CategoryDb.model_validate(category)
 
     async def update_by_id(
-        self, cat_id: int, updated_category: CategoryCreate, current_user: Payload
+        self, cat_id: int, updated_category: CategoryCreate, current_user: UserPayload
     ) -> CategoryDb:
         if not current_user.is_admin:
+            logger.info(
+                f"Category update failed: id={cat_id}, reason=user {current_user.username} is not admin"
+            )
             raise AccessDenied
 
         category = await self.cat_repo.get_by_id_or_404(cat_id)
@@ -56,10 +65,15 @@ class CategoryService(SessionServiceBase):
         await self.session.commit()
         await self.cat_cache.delete_all_categories()
 
+        logger.info(f"Category updated: id={category.id}")
+
         return CategoryDb.model_validate(category)
 
-    async def delete_by_id(self, cat_id: int, current_user: Payload) -> None:
+    async def delete_by_id(self, cat_id: int, current_user: UserPayload) -> None:
         if not current_user.is_admin:
+            logger.info(
+                f"Category delete failed: id={cat_id}, reason=user {current_user.username} is not admin"
+            )
             raise AccessDenied
 
         category = await self.cat_repo.get_by_id_or_404(cat_id)
@@ -67,6 +81,8 @@ class CategoryService(SessionServiceBase):
         await self.cat_repo.delete(category)
         await self.session.commit()
         await self.cat_cache.delete_all_categories()
+
+        logger.info(f"Category deleted: id={category.id}")
 
     async def _validate_name(self, name: str) -> None:
         if await self.cat_repo.get_by_name(name):

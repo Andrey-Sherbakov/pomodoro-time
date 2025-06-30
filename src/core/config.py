@@ -1,6 +1,7 @@
 import os
 from functools import lru_cache
 
+from src.core.log_config import logger
 from passlib.context import CryptContext
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -83,6 +84,9 @@ class AuthSettings(BaseSettings):
 def get_settings() -> Settings:
     environment = os.environ.get("ENVIRONMENT", "local")
     env_file = f".{environment.lower()}.env"
+
+    logger.debug(f"Using env file for settings: {env_file}")
+
     return Settings(_env_file=env_file)
 
 
@@ -90,4 +94,7 @@ def get_settings() -> Settings:
 def get_auth_settings() -> AuthSettings:
     environment = os.environ.get("ENVIRONMENT", "local")
     env_file = f".{environment.lower()}.env"
+
+    logger.debug(f"Using env file for auth settings: {env_file}")
+
     return AuthSettings(_env_file=env_file)
