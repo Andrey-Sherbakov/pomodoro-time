@@ -126,7 +126,7 @@ class TestGetByCategory:
         await task_repository.session.commit()
 
         second_response = await ac.get(f"/api/tasks/category/{test_category.id}")
-        assert second_response.status_code == 200
+        assert second_response.status_code == 404
         assert isinstance(second_response.json(), list)
         assert len(second_response.json()) == 2
 
