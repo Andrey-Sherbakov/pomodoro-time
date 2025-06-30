@@ -1,49 +1,27 @@
 from pathlib import Path
 import sys
-from loguru import logger
+import logging
 
 
 log_path = log_path = Path(__file__).resolve().parent.parent.parent / "logs"
 log_path.mkdir(exist_ok=True)
 
-logger.remove()
 
+logger = logging.getLogger("main")
+logger.setLevel(logging.DEBUG)
 
-def formatter(record):
-    levelname = record["level"].name + ":"
-    record["level"].name = levelname.ljust(9)
-    return "<level>{level}</level> {message} | <cyan>{name}:{function}:{line}</cyan> \n"
-
-
-logger.add(
-    sys.stdout,
-    level="DEBUG",
-    format=formatter,
-    colorize=True,
+formatter = logging.Formatter(
+    fmt="%(asctime)s.%(msecs)03d %(module)10s:%(lineno)-3d %(levelname)-8s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-logger.add(
-    log_path / "app.log",
-    rotation="10 MB",
-    retention="10 days",
-    compression="zip",
-    level="DEBUG",
-    encoding="utf-8",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} {message} |  {name}:{function}:{line}",
-)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
 
+file_handler = logging.FileHandler(f"{log_path}/app.log", encoding="utf-8")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
 
-# class InterceptHandler(logging.Handler):
-#     def emit(self, record):
-#         try:
-#             level = logger.level(record.levelname).name
-#         except ValueError:
-#             level = record.levelno
-#         logger.opt(depth=6, exception=record.exc_info).log(level, record.getMessage())
-
-
-# logging.basicConfig(handlers=[InterceptHandler()], level=logging.INFO)
-# for name in ("uvicorn", "uvicorn.error", "fastapi"):
-#     logger_ = logging.getLogger(name)
-#     logger_.handlers = [InterceptHandler()]
-#     logger_.propagate = False
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
