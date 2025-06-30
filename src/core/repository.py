@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import Base
+from src.core.log_config import logger
 
 BaseType = TypeVar("BaseType", bound=Base)
 
@@ -44,6 +45,7 @@ class ORMRepository(IRepository[BaseType]):
     async def get_by_id_or_404(self, item_id: int) -> BaseType:
         item = await self.get_by_id(item_id)
         if item is None:
+            logger.warning(f"{self.model.__name__.lower()} with id {item_id} not found")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"There is no {self.model.__name__.lower()} with requested id",

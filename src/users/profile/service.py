@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from slugify import slugify
 
-from src.core import SessionServiceBase
+from src.core import SessionServiceBase, logger
 from src.users.auth.exceptions import ProviderError
 from src.users.auth.schemas import (
     GoogleUserData,
@@ -27,6 +27,7 @@ from src.users.profile.schemas import (
     UserDb,
     UserToDb,
     UserUpdate,
+    UserDelete,
 )
 
 
@@ -53,6 +54,8 @@ class UserService(SessionServiceBase):
 
         await self.commit()
 
+        logger.info(f"User created: username={user.username}, email={user.email}")
+
         await self.mail_client.send_welcome_email(username=user.username, email=user.email)
 
         return UserDb.model_validate(user)
@@ -68,6 +71,8 @@ class UserService(SessionServiceBase):
         user = await self.user_repo.add(User(**user_to_db.model_dump()))
 
         await self.commit()
+
+        logger.info(f"Superuser created: username={user.username}, email={user.email}")
 
         await self.mail_client.send_welcome_email(username=user.username, email=user.email)
 
@@ -88,28 +93,44 @@ class UserService(SessionServiceBase):
 
         await self.commit()
 
+        logger.info(f"User updated: username={user.username}")
+
         return UserDb.model_validate(user)
 
     async def change_password(self, body: PasswordUpdate, current_user: UserPayload) -> None:
         user = await self.user_repo.get_by_id_or_404(current_user.id)
         if not self.security.verify_password(body.old_password, user.hashed_password):
+            logger.info(
+                f"Password change failed: username={user.username}, reason=Invalid old password"
+            )
             raise InvalidPassword
         user.hashed_password = self.security.hash_password(body.new_password)
 
         await self.commit()
+
+        logger.info(f"Password changed: username={user.username}")
+
         await self.token_bl.set_logout_timestamp(user.id)
         await self.mail_client.send_password_change_email(username=user.username, email=user.email)
 
-    async def delete_user(self, user_id: int) -> None:
-        user = await self.user_repo.get_by_id_or_404(user_id)
+    async def delete_user(self, body: UserDelete, current_user: UserPayload) -> None:
+        user = await self.user_repo.get_by_id_or_404(current_user.id)
+
+        if not self.security.verify_password(body.password, user.hashed_password):
+            logger.info(f"User delete failure: username={user.username}, reason: Invalid password")
+            raise InvalidPassword
 
         await self.user_repo.delete(user)
         await self.commit()
+
+        logger.info(f"User deleted: username={current_user.username}")
+
         await self.token_bl.set_logout_timestamp(user.id)
         await self.mail_client.send_goodbye_email(username=user.username, email=user.email)
 
-    async def create_user_from_oauth(self, user_data: UserDataType, provider: Provider) -> User:
+    async def get_create_user_from_oauth(self, user_data: UserDataType, provider: Provider) -> User:
         if user := await self.user_repo.get_by_email(email=str(user_data.email)):
+            logger.info(f"OAuth user exists: username={user.username}, provider={provider.value}")
             return user
 
         if provider == provider.google:
@@ -117,10 +138,15 @@ class UserService(SessionServiceBase):
         elif provider == provider.yandex:
             user_to_db = await self._user_from_yandex_to_db(user_data)
         else:
+            logger.error(f"Unsupported provider: {provider}")
             raise ProviderError
 
         user = await self.user_repo.add(User(**user_to_db.model_dump()))
         await self.commit()
+
+        logger.info(
+            f"Created new user from OAuth: username={user.username}, provider={provider.value}"
+        )
 
         await self.mail_client.send_welcome_email(username=user.username, email=user.email)
 

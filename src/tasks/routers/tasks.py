@@ -16,7 +16,7 @@ async def get_all_tasks(service: TaskServiceDep) -> list[TaskDb]:
 async def create_task(
     body: TaskCreate, service: TaskServiceDep, current_user: CurrentUserDep
 ) -> TaskDb:
-    return await service.create(body, current_user.id)
+    return await service.create(body, current_user)
 
 
 @router.get("/{task_id}", response_model=TaskDb)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.core import SessionServiceBase
+from src.core import SessionServiceBase, logger
 from src.core.config import AuthSettings
 from src.users.auth.clients import BaseClient, GoogleClient, YandexClient
 from src.users.auth.exceptions import (
@@ -30,9 +30,14 @@ class AuthService(SessionServiceBase):
     async def login(self, body: UserLogin) -> Tokens:
         user = await self.user_repo.get_by_username(body.username)
         if not user or not self.security.verify_password(body.password, str(user.hashed_password)):
+            logger.info(
+                f"Failed login: username={body.username}, reason=Invalid username or password"
+            )
             raise AuthenticationError
 
         tokens = self.security.create_tokens(UserPayload.model_validate(user))
+
+        logger.info(f"User logged in: username={user.username}")
 
         return tokens
 
@@ -42,17 +47,22 @@ class AuthService(SessionServiceBase):
         )
         user = await self.user_repo.get_by_id(int(payload.sub))
         if not user:
+            logger.warning(f"Failed token refresh: user not found (sub={payload.sub})")
             raise TokenError
 
         new_tokens = self.security.create_tokens(UserPayload.model_validate(user))
+
+        logger.info(f"Tokens updated: username={user.username}")
 
         return new_tokens
 
     async def logout(self, current_user: UserPayload) -> None:
         await self.token_bl.blacklist_tokens(current_user.jti)
+        logger.info(f"User logged out: username={current_user.username}")
 
     async def logout_all(self, current_user: UserPayload) -> None:
         await self.token_bl.set_logout_timestamp(current_user.id)
+        logger.info(f"User logged out from all devices: username={current_user.username}")
 
 
 @dataclass
@@ -66,13 +76,14 @@ class OAuthService:
     async def auth(self, code: str) -> Tokens:
         user_data = await self.client.get_user_info(code)
 
-        user = await self.user_service.create_user_from_oauth(user_data, self.provider)
+        user = await self.user_service.get_create_user_from_oauth(user_data, self.provider)
 
         tokens = self.security.create_tokens(UserPayload.model_validate(user))
         return tokens
 
     def get_redirect_url(self) -> str:
         redirect_url = getattr(self.auth_settings, f"{self.provider.value}_REDIRECT_URL")
+        logger.info(f"OAuth redirect URL for {self.provider.value}: {redirect_url}")
         return redirect_url
 
 

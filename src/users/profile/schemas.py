@@ -57,6 +57,10 @@ class PasswordUpdate(BaseModel):
         return v
 
 
+class UserDelete(BaseModel):
+    password: str
+
+
 class EmailBody(BaseModel):
     subject: str
     body: str

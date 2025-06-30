@@ -9,6 +9,7 @@ from src.users.profile.schemas import (
     UserDb,
     UserUpdate,
     UserDeleteResponse,
+    UserDelete,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -46,13 +47,13 @@ async def change_password(
 
 @router.delete("/delete", response_model=UserDeleteResponse)
 async def delete_profile(
-    service: UserServiceDep, current_user: CurrentUserDep
+    body: UserDelete, service: UserServiceDep, current_user: CurrentUserDep
 ) -> UserDeleteResponse:
-    await service.delete_user(current_user.id)
+    await service.delete_user(body, current_user)
     return UserDeleteResponse()
 
 
 @router.post("/send_email")
 async def send_email(username: str, email: str, service: UserServiceDep):
     await service.mail_client.send_welcome_email(username, email)
-    return {"status": status.HTTP_200_OK}
+    return {"status": status.HTTP_200_OK, "detail": "Email successfully send"}

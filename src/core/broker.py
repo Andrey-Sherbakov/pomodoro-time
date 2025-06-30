@@ -11,7 +11,6 @@ from aio_pika.abc import (
     AbstractRobustConnection,
 )
 from fastapi import FastAPI
-from loguru import logger
 
 from src.core.config import Settings
 

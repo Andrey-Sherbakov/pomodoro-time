@@ -146,7 +146,7 @@ async def get_yandex_service(
 
 YandexServiceDep = Annotated[YandexService, Depends(get_yandex_service)]
 
-# bearer token dependency
+# token dependency
 oauth2_scheme = HTTPBearer()
 
 

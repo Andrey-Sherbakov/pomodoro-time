@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 import sys
 from loguru import logger
@@ -9,10 +8,17 @@ log_path.mkdir(exist_ok=True)
 
 logger.remove()
 
+
+def formatter(record):
+    levelname = record["level"].name + ":"
+    record["level"].name = levelname.ljust(9)
+    return "<level>{level}</level> {message} | <cyan>{name}:{function}:{line}</cyan> \n"
+
+
 logger.add(
     sys.stdout,
     level="DEBUG",
-    format="<level>{level}</level> | <level>{message}</level> | <cyan>{name}:{function}:{line}</cyan>",
+    format=formatter,
     colorize=True,
 )
 
@@ -23,7 +29,7 @@ logger.add(
     compression="zip",
     level="DEBUG",
     encoding="utf-8",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message} |  {name}:{function}:{line}",
+    format="{time:YYYY-MM-DD HH:mm:ss} | {level} {message} |  {name}:{function}:{line}",
 )
 
 
