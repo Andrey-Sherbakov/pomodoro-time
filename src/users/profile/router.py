@@ -45,7 +45,7 @@ async def change_password(
     return PasswordUpdateResponse()
 
 
-@router.delete("/delete", response_model=UserDeleteResponse)
+@router.post("/delete", response_model=UserDeleteResponse)
 async def delete_profile(
     body: UserDelete, service: UserServiceDep, current_user: CurrentUserDep
 ) -> UserDeleteResponse:

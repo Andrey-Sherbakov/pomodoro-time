@@ -135,21 +135,19 @@ class TestChangePassword:
 
 class TestDelete:
     async def test_success(self, ac: AsyncClient, user_delete, bearer):
-        response = await ac.delete(
-            "/api/users/delete", json=user_delete.model_dump(), headers=bearer
-        )
+        response = await ac.post("/api/users/delete", json=user_delete.model_dump(), headers=bearer)
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["detail"] == "User successfully deleted"
 
-        second_response = await ac.delete("/api/users/delete", headers=bearer)
+        second_response = await ac.post("/api/users/delete", headers=bearer)
         assert second_response.status_code == status.HTTP_401_UNAUTHORIZED
         assert second_response.json()["detail"] == "Authorization required"
 
     async def test_fail(self, ac: AsyncClient, bearer):
-        response = await ac.delete("/api/users/delete", headers=bearer)
+        response = await ac.post("/api/users/delete", headers=bearer)
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
-        second_response = await ac.delete(
+        second_response = await ac.post(
             "/api/users/delete", json={"password": "wrong_password"}, headers=bearer
         )
         assert second_response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
