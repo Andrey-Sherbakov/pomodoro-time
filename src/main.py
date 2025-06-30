@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, APIRouter
 
-from src.core import get_settings
+from src.core import get_settings, logger
 from src.core.broker import broker_startup, broker_shutdown
 from src.core.database import (
     redis_startup,
@@ -44,3 +44,5 @@ router.include_router(ping_router)
 
 
 app.include_router(router)
+
+logger.info("App started")

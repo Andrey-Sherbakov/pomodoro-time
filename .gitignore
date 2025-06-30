@@ -3,3 +3,4 @@ __pycache__/
 .dev.env
 .local.env
 .idea
+logs

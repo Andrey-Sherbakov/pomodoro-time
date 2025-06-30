@@ -8,6 +8,7 @@ from src.core.dependencies import (
     AuthSettingsDep,
     BrokerClientDep,
 )
+from src.core.log_config import logger
 from src.core.service import SessionServiceBase, RedisServiceBase
 from src.core.config import get_settings
 
@@ -24,4 +25,5 @@ __all__ = [
     SessionServiceBase,
     RedisServiceBase,
     get_settings,
+    logger,
 ]
