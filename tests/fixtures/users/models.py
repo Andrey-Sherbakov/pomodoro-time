@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from pytest_factoryboy import register
 
 from src.users.profile.models import User
-from src.users.profile.schemas import UserCreate, UserUpdate, PasswordUpdate
+from src.users.profile.schemas import UserCreate, UserUpdate, PasswordUpdate, UserDelete
 
 faker = FakerFactory.create()
 
@@ -75,3 +75,8 @@ def password_update(test_user) -> PasswordUpdate:
         new_password="new_password",
         new_password_confirm="new_password",
     )
+
+
+@pytest.fixture
+def user_delete(test_user) -> UserDelete:
+    return UserDelete(password=test_user.password)
