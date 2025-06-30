@@ -10,9 +10,7 @@ logger.remove()
 
 
 def formatter(record):
-    levelname = record["level"].name + ":"
-    record["level"].name = levelname.ljust(9)
-    return "<level>{level}</level> {message} | <cyan>{name}:{function}:{line}</cyan> \n"
+    return "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level:<8}</level> | {message:<50} | <cyan>{name}:{function}:{line}</cyan>\n"
 
 
 logger.add(
@@ -29,7 +27,7 @@ logger.add(
     compression="zip",
     level="DEBUG",
     encoding="utf-8",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} {message} |  {name}:{function}:{line}",
+    format=formatter,
 )
 
 
