@@ -13,6 +13,7 @@ from aio_pika.abc import (
 from fastapi import FastAPI
 
 from src.core.config import Settings
+from src.core.log_config import logger
 
 
 @dataclass
@@ -60,7 +61,9 @@ class BrokerClient:
         async with message.process():
             body = message.body.decode()
             correlation_id = message.correlation_id
-            print(f"{body}, correlation_id: {correlation_id}")
+            logger.info(
+                f"Recieved callback message: body=({body}), correlation_id={correlation_id}"
+            )
 
 
 async def broker_startup(
