@@ -22,27 +22,42 @@ class BrokerClient:
     message_handler: Callable[[AbstractIncomingMessage], Awaitable[None]] | None = None
     _connection: AbstractRobustConnection | None = None
     _channel: AbstractRobustChannel | None = None
-    _queue: AbstractQueue | None = None
+    _mail_queue: AbstractQueue | None = None
+    _tg_queue: AbstractQueue | None = None
     _callback_queue: AbstractQueue | None = None
 
     async def send_mail(self, body: dict):
         message = aio_pika.Message(
             body=json.dumps(body).encode(),
             correlation_id=str(uuid.uuid4()),
-            reply_to=self.settings.BROKER_MAIL_CALLBACK_TOPIC,
+            reply_to=self.settings.BROKER_CALLBACK_TOPIC,
         )
         await self._channel.default_exchange.publish(
             message=message, routing_key=self.settings.BROKER_MAIL_TOPIC
         )
 
+    async def send_tg_message(self, body: str):
+        message = aio_pika.Message(
+            body=body.encode(),
+            correlation_id=str(uuid.uuid4()),
+            reply_to=self.settings.BROKER_CALLBACK_TOPIC,
+        )
+        await self._channel.default_exchange.publish(
+            message=message, routing_key=self.settings.BROKER_TG_TOPIC
+        )
+        logger.debug(f"Sending message via telegram: message={body}")
+
     async def start(self):
         self._connection = await aio_pika.connect_robust(self.settings.BROKER_URL)
         self._channel = await self._connection.channel()
-        self._queue = await self._channel.declare_queue(
+        self._mail_queue = await self._channel.declare_queue(
             self.settings.BROKER_MAIL_TOPIC, durable=True
         )
+        self._tg_queue = await self._channel.declare_queue(
+            self.settings.BROKER_TG_TOPIC, durable=True
+        )
         self._callback_queue = await self._channel.declare_queue(
-            self.settings.BROKER_MAIL_CALLBACK_TOPIC, durable=True
+            self.settings.BROKER_CALLBACK_TOPIC, durable=True
         )
 
     async def stop(self):
