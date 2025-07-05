@@ -6,9 +6,10 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-log_path = Path(__file__).resolve().parent.parent.parent / "logs"
-log_path.mkdir(exist_ok=True)
+log_path = Path(__file__).resolve().parent.parent.parent.parent / "logs" / "pomodoro-time"
+log_path.mkdir(exist_ok=True, parents=True)
 
+# formatters
 LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(message)-50s | %(filename)s:%(funcName)s:%(lineno)d"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
@@ -39,26 +40,49 @@ class ColorFormatter(logging.Formatter):
         )
 
 
+# getting logger
 logger = logging.getLogger("pomodoro")
 logger.setLevel(logging.DEBUG)
 
+# console handler setup
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(ColorFormatter())
 logger.addHandler(console_handler)
 
-file_handler = RotatingFileHandler(
-    log_path / "app.log",
+# file handlers setup
+debug_file_handler = RotatingFileHandler(
+    log_path / "debug.log",
     maxBytes=10 * 1024 * 1024,
     backupCount=10,
     encoding="utf-8",
 )
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+debug_file_handler.setLevel(logging.DEBUG)
+debug_file_handler.setFormatter(formatter)
+logger.addHandler(debug_file_handler)
+
+info_file_handler = RotatingFileHandler(
+    log_path / "info.log",
+    maxBytes=10 * 1024 * 1024,
+    backupCount=10,
+    encoding="utf-8",
+)
+info_file_handler.setLevel(logging.INFO)
+info_file_handler.setFormatter(formatter)
+logger.addHandler(info_file_handler)
+
+warning_file_handler = RotatingFileHandler(
+    log_path / "warning.log",
+    maxBytes=10 * 1024 * 1024,
+    backupCount=10,
+    encoding="utf-8",
+)
+warning_file_handler.setLevel(logging.WARNING)
+warning_file_handler.setFormatter(formatter)
+logger.addHandler(warning_file_handler)
 
 
+# custom handlers setup
 class TelegramHandler(logging.Handler):
     def __init__(self, broker_client) -> None:
         super().__init__(level=logging.ERROR)
