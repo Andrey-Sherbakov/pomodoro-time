@@ -10,6 +10,8 @@ from src.core.database import (
     async_client_startup,
     async_client_shutdown,
 )
+from src.core.log_config import logger_startup
+from src.core.middleware import exception_middleware
 from src.tasks.routers import task_router, category_router
 from src.users.auth.routers import auth_router
 from src.users.profile.router import router as profile_router
@@ -19,8 +21,9 @@ from src.users.profile.router import router as profile_router
 async def lifespan(app: FastAPI):
     settings = get_settings()
 
-    await async_client_startup(app=app)
     await broker_startup(app=app, settings=settings)
+    logger_startup(app=app)
+    await async_client_startup(app=app)
     await redis_startup(app=app)
 
     yield
@@ -32,6 +35,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.middleware("http")(exception_middleware)
 
 router = APIRouter(prefix="/api")
 

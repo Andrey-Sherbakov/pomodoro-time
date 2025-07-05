@@ -54,7 +54,7 @@ class UserService(SessionServiceBase):
 
         await self.commit()
 
-        logger.info(f"User created: username={user.username}, email={user.email}")
+        logger.info("User created: username=%s, email=%s", user.username, user.email)
 
         await self.mail_client.send_welcome_email(username=user.username, email=user.email)
 
@@ -72,7 +72,7 @@ class UserService(SessionServiceBase):
 
         await self.commit()
 
-        logger.info(f"Superuser created: username={user.username}, email={user.email}")
+        logger.info("Superuser created: username=%s, email=%s", user.username, user.email)
 
         await self.mail_client.send_welcome_email(username=user.username, email=user.email)
 
@@ -93,7 +93,7 @@ class UserService(SessionServiceBase):
 
         await self.commit()
 
-        logger.info(f"User updated: username={user.username}")
+        logger.info("User updated: username=%s", user.username)
 
         return UserDb.model_validate(user)
 
@@ -101,14 +101,14 @@ class UserService(SessionServiceBase):
         user = await self.user_repo.get_by_id_or_404(current_user.id)
         if not self.security.verify_password(body.old_password, user.hashed_password):
             logger.info(
-                f"Password change failed: username={user.username}, reason=Invalid old password"
+                "Password change failed: username=%s, reason=Invalid old password", user.username
             )
             raise InvalidPassword
         user.hashed_password = self.security.hash_password(body.new_password)
 
         await self.commit()
 
-        logger.info(f"Password changed: username={user.username}")
+        logger.info("Password changed: username=%s", user.username)
 
         await self.token_bl.set_logout_timestamp(user.id)
         await self.mail_client.send_password_change_email(username=user.username, email=user.email)
@@ -117,13 +117,13 @@ class UserService(SessionServiceBase):
         user = await self.user_repo.get_by_id_or_404(current_user.id)
 
         if not self.security.verify_password(body.password, user.hashed_password):
-            logger.info(f"User delete failure: username={user.username}, reason: Invalid password")
+            logger.info("User delete failure: username=%s, reason: Invalid password", user.username)
             raise InvalidPassword
 
         await self.user_repo.delete(user)
         await self.commit()
 
-        logger.info(f"User deleted: username={current_user.username}")
+        logger.info("User deleted: username=%s", current_user.username)
 
         await self.token_bl.set_logout_timestamp(user.id)
         await self.mail_client.send_goodbye_email(username=user.username, email=user.email)
@@ -132,7 +132,7 @@ class UserService(SessionServiceBase):
         self, user_data: T, provider: Provider
     ) -> User:
         if user := await self.user_repo.get_by_email(email=str(user_data.email)):
-            logger.info(f"OAuth user exists: username={user.username}, provider={provider.value}")
+            logger.info("OAuth user exists: username=%s, provider=%s", user.username, provider.value)
             return user
 
         if provider == provider.google:
@@ -140,14 +140,14 @@ class UserService(SessionServiceBase):
         elif provider == provider.yandex:
             user_to_db = await self._user_from_yandex_to_db(user_data)
         else:
-            logger.error(f"Unsupported provider: {provider}")
+            logger.error("Unsupported provider: %s", provider)
             raise ProviderError
 
         user = await self.user_repo.add(User(**user_to_db.model_dump()))
         await self.commit()
 
         logger.info(
-            f"Created new user from OAuth: username={user.username}, provider={provider.value}"
+            "Created new user from OAuth: username=%s, provider=%s", user.username, provider.value
         )
 
         await self.mail_client.send_welcome_email(username=user.username, email=user.email)

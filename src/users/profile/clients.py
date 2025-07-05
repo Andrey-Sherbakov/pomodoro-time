@@ -24,7 +24,7 @@ class MailClient:
 
         await self._send_text_email(subject=subject, body=body, email=email)
 
-        logger.info(f"Welcome email send to: username={username}, email={email}")
+        logger.info("Welcome email send to: username=%s, email=%s", username, email)
 
     async def send_password_change_email(self, username: str, email: str) -> None:
         subject = "Ваш пароль был изменен"
@@ -41,7 +41,7 @@ class MailClient:
 
         await self._send_text_email(subject=subject, body=body, email=email)
 
-        logger.info(f"Password change email send to: username={username}, email={email}")
+        logger.info("Password change email send to: username=%s, email=%s", username, email)
 
     async def send_goodbye_email(self, username: str, email: str) -> None:
         subject = "Ваш аккаунт был удален"
@@ -59,7 +59,7 @@ class MailClient:
 
         await self._send_text_email(subject=subject, body=body, email=email)
 
-        logger.info(f"Goodbye email send to: username={username}, email={email}")
+        logger.info("Goodbye email send to: username=%s, email=%s", username, email)
 
     async def _send_text_email(self, subject: str, body: str, email: str) -> None:
         email_body = EmailBody(

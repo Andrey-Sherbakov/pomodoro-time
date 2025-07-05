@@ -43,7 +43,7 @@ class ORMRepository[T: Base](IRepository[T]):
     async def get_by_id_or_404(self, item_id: int) -> T:
         item = await self.get_by_id(item_id)
         if item is None:
-            logger.warning(f"{self.model.__name__.lower()} with id {item_id} not found")
+            logger.warning("%s with id %s not found", self.model.__name__.lower(), item_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"There is no {self.model.__name__.lower()} with requested id",

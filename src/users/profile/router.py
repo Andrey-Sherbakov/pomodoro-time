@@ -53,7 +53,14 @@ async def delete_profile(
     return UserDeleteResponse()
 
 
-@router.post("/send_email")
+@router.post("/send-email")
 async def send_email(username: str, email: str, service: UserServiceDep):
     await service.mail_client.send_welcome_email(username, email)
-    return {"status": status.HTTP_200_OK, "detail": "Email successfully send"}
+    return {"status": status.HTTP_200_OK, "detail": "Email send"}
+
+
+@router.post("/send-tg-message")
+async def send_message_with_telegram(message: str, service: UserServiceDep):
+    raise RuntimeError("Bad request")
+    await service.mail_client.broker_client.send_tg_message(body=message)
+    return {"status": status.HTTP_200_OK, "detail": "Telegram message send"}

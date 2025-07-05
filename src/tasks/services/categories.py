@@ -29,7 +29,9 @@ class CategoryService(SessionServiceBase):
     async def create(self, new_category: CategoryCreate, current_user: UserPayload) -> CategoryDb:
         if not current_user.is_admin:
             logger.info(
-                f"Category create failed: name={new_category.name}, reason=user {current_user.username} is not admin"
+                "Category create failed: name=%s, reason=user %s is not admin",
+                new_category.name,
+                current_user.username,
             )
             raise AccessDenied
 
@@ -39,7 +41,7 @@ class CategoryService(SessionServiceBase):
         await self.session.commit()
         await self.cat_cache.delete_all_categories()
 
-        logger.info(f"Category created: id={category.id}, name={category.name}")
+        logger.info("Category created: id=%s, name=%s", category.id, category.name)
 
         return CategoryDb.model_validate(category)
 
@@ -53,7 +55,9 @@ class CategoryService(SessionServiceBase):
     ) -> CategoryDb:
         if not current_user.is_admin:
             logger.info(
-                f"Category update failed: id={cat_id}, reason=user {current_user.username} is not admin"
+                "Category update failed: id=%s, reason=user %s is not admin",
+                cat_id,
+                current_user.username,
             )
             raise AccessDenied
 
@@ -65,14 +69,16 @@ class CategoryService(SessionServiceBase):
         await self.session.commit()
         await self.cat_cache.delete_all_categories()
 
-        logger.info(f"Category updated: id={category.id}")
+        logger.info("Category updated: id=%s", category.id)
 
         return CategoryDb.model_validate(category)
 
     async def delete_by_id(self, cat_id: int, current_user: UserPayload) -> None:
         if not current_user.is_admin:
             logger.info(
-                f"Category delete failed: id={cat_id}, reason=user {current_user.username} is not admin"
+                "Category delete failed: id=%s, reason=user %s is not admin",
+                cat_id,
+                current_user.username,
             )
             raise AccessDenied
 
@@ -82,7 +88,7 @@ class CategoryService(SessionServiceBase):
         await self.session.commit()
         await self.cat_cache.delete_all_categories()
 
-        logger.info(f"Category deleted: id={category.id}")
+        logger.info("Category deleted: id=%s", category.id)
 
     async def _validate_name(self, name: str) -> None:
         if await self.cat_repo.get_by_name(name):
