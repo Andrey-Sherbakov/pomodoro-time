@@ -86,7 +86,7 @@ def get_settings() -> Settings:
     environment = os.environ.get("ENVIRONMENT", "local")
     env_file = f".{environment.lower()}.env"
 
-    logger.debug(f"Using env file for settings: {env_file}")
+    logger.debug("Using env file for settings: %s", env_file)
 
     return Settings(_env_file=env_file)
 
@@ -96,6 +96,6 @@ def get_auth_settings() -> AuthSettings:
     environment = os.environ.get("ENVIRONMENT", "local")
     env_file = f".{environment.lower()}.env"
 
-    logger.debug(f"Using env file for auth settings: {env_file}")
+    logger.debug("Using env file for auth settings: %s", env_file)
 
     return AuthSettings(_env_file=env_file)

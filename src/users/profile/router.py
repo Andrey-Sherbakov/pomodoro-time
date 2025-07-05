@@ -61,5 +61,6 @@ async def send_email(username: str, email: str, service: UserServiceDep):
 
 @router.post("/send-tg-message")
 async def send_message_with_telegram(message: str, service: UserServiceDep):
+    raise RuntimeError("Bad request")
     await service.mail_client.broker_client.send_tg_message(body=message)
     return {"status": status.HTTP_200_OK, "detail": "Telegram message send"}

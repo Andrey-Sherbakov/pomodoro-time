@@ -36,7 +36,7 @@ class TaskService(SessionServiceBase):
         await self.session.commit()
         await self.task_cache.delete_all_tasks()
 
-        logger.info(f"Task created: id={task.id}, name={task.name}")
+        logger.info("Task created: id=%s, name=%s", task.id, task.name)
 
         return TaskDb.model_validate(task)
 
@@ -51,7 +51,9 @@ class TaskService(SessionServiceBase):
 
         if not (current_user.is_admin or current_user.id == task.creator_id):
             logger.info(
-                f"Failed to update task: id={task.id}, reason=user {current_user.username} is not creator or admin"
+                "Failed to update task: id=%s, reason=user %s is not creator or admin",
+                task.id,
+                current_user.username,
             )
             raise AccessDenied
 
@@ -62,7 +64,7 @@ class TaskService(SessionServiceBase):
         await self.session.commit()
         await self.task_cache.delete_all_tasks()
 
-        logger.info(f"Task updated: id={task.id}")
+        logger.info("Task updated: id=%s", task.id)
 
         return TaskDb.model_validate(task)
 
@@ -71,7 +73,9 @@ class TaskService(SessionServiceBase):
 
         if not (current_user.is_admin or current_user.id == task.creator_id):
             logger.info(
-                f"Failed to delete task: id={task_id}, reason=user {current_user.username} is not creator or admin"
+                "Failed to delete task: id=%s, reason=user %s is not creator or admin",
+                task_id,
+                current_user.username,
             )
             raise AccessDenied
 
@@ -79,7 +83,7 @@ class TaskService(SessionServiceBase):
         await self.session.commit()
         await self.task_cache.delete_all_tasks()
 
-        logger.info(f"Task deleted: id={task.id}")
+        logger.info("Task deleted: id=%s", task.id)
 
     async def get_tasks_by_category(self, cat_id: int) -> list[TaskDb]:
         category = await self.cat_repo.get_by_id_or_404(cat_id)

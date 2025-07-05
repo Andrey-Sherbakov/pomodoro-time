@@ -45,7 +45,7 @@ class BrokerClient:
         await self._channel.default_exchange.publish(
             message=message, routing_key=self.settings.BROKER_TG_TOPIC
         )
-        logger.debug(f"Sending message via telegram: message={body}")
+        logger.debug("Sending message via telegram: message=(%s)", body)
 
     async def start(self):
         self._connection = await aio_pika.connect_robust(self.settings.BROKER_URL)
@@ -77,7 +77,7 @@ class BrokerClient:
             body = message.body.decode()
             correlation_id = message.correlation_id
             logger.info(
-                f"Recieved callback message: body=({body}), correlation_id={correlation_id}"
+                "Recieved callback message: body=(%s), correlation_id=%s", body, correlation_id
             )
 
 

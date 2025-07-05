@@ -29,7 +29,7 @@ class TokenBlacklistService:
 
         await self.redis_bl.set(f"revoked:{jti}", "1", ex=ex_seconds)
 
-        logger.info(f"One pair of tokens revoked: jti={jti}")
+        logger.info("One pair of tokens revoked: jti=%s", jti)
 
     async def is_blacklisted(self, jti: str) -> bool:
         return await self.redis_bl.exists(f"revoked:{jti}") == 1
@@ -42,7 +42,7 @@ class TokenBlacklistService:
         now_ts = int(datetime.datetime.now(datetime.UTC).timestamp())
         await self.redis_bl.set(f"logout_ts:{user_id}", str(now_ts), ex=ex_seconds)
 
-        logger.info(f"All tokens revoked: user_id={user_id}")
+        logger.info("All tokens revoked: user_id=%s", user_id)
 
     async def get_logout_timestamp(self, user_id: str) -> int | None:
         ts = await self.redis_bl.get(f"logout_ts:{user_id}")
@@ -67,7 +67,7 @@ class SecurityService:
         elif token_type == TokenType.refresh:
             expiration += datetime.timedelta(days=self.settings.REFRESH_TOKEN_EXPIRE_DAYS)
         else:
-            logger.error(f"Invalid token type: {token_type}")
+            logger.error("Invalid token type: %s", token_type)
             raise InvalidTokenType
 
         return expiration.timestamp()
@@ -96,7 +96,7 @@ class SecurityService:
                 type=token_type,
             )
         else:
-            logger.error(f"Invalid token type: {token_type}")
+            logger.error("Invalid token type: %s", token_type)
             raise InvalidTokenType
 
         encoded_jwt = jwt.encode(
@@ -123,8 +123,8 @@ class SecurityService:
                 token, key=self.settings.JWT_SECRET_KEY, algorithms=[self.settings.JWT_ALGORITHM]
             )
 
-            if payload["type"] != token_type.value:
-                logger.error(f"Invalid token type: {payload['type']}")
+            if payload.get("type") != token_type.value:
+                logger.error("Invalid token type: %s", payload.get("type"))
                 raise InvalidTokenType
 
             if token_type == TokenType.access:
@@ -134,14 +134,14 @@ class SecurityService:
 
             if await self.token_bl.is_blacklisted(token_payload.jti):
                 logger.warning(
-                    f"Token has been revoked: sub={token_payload.sub}, type={token_type.value}"
+                    "Token has been revoked: sub=%s, type=%s", token_payload.sub, token_type.value
                 )
                 raise TokenRevoked
 
             logout_ts = await self.token_bl.get_logout_timestamp(token_payload.sub)
             if logout_ts and logout_ts >= int(token_payload.iat):
                 logger.warning(
-                    f"Token has been revoked: sub={token_payload.sub}, type={token_type.value}"
+                    "Token has been revoked: sub=%s, type=%s", token_payload.sub, token_type.value
                 )
                 raise TokenRevoked
 
