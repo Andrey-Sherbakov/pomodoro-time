@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -46,7 +47,7 @@ console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(ColorFormatter())
 logger.addHandler(console_handler)
 
-file_handler = logging.handlers.RotatingFileHandler(
+file_handler = RotatingFileHandler(
     log_path / "app.log",
     maxBytes=10 * 1024 * 1024,
     backupCount=10,
