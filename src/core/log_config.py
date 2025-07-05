@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-log_path = log_path = Path(__file__).resolve().parent.parent.parent / "logs"
+log_path = Path(__file__).resolve().parent.parent.parent / "logs"
 log_path.mkdir(exist_ok=True)
 
 LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(message)-50s | %(filename)s:%(funcName)s:%(lineno)d"
