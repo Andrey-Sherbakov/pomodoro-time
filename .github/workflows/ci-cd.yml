@@ -1,4 +1,4 @@
-name: CI
+name: CI-CD
 
 on:
   push:
@@ -50,3 +50,27 @@ jobs:
       - name: Stop test services
         run: docker compose -f docker-compose.test.yml down
         if: always()
+
+  deploy:
+    needs: [ ruff, test ]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: pomodoro
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_ACTIONS_DEV_SERVER }}
+
+      - name: Deploy to server via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no root@94.228.126.175 "
+            cd pomodoro-time &&
+            git pull &&
+            make dev-down &&
+            make dev-up
+          "
