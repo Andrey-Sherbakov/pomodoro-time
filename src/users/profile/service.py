@@ -132,7 +132,9 @@ class UserService(SessionServiceBase):
         self, user_data: T, provider: Provider
     ) -> User:
         if user := await self.user_repo.get_by_email(email=str(user_data.email)):
-            logger.info("OAuth user exists: username=%s, provider=%s", user.username, provider.value)
+            logger.info(
+                "OAuth user exists: username=%s, provider=%s", user.username, provider.value
+            )
             return user
 
         if provider == provider.google:

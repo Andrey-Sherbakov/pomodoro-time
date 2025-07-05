@@ -22,10 +22,10 @@ jobs:
         run: uv sync
 
       - name: Run Ruff linter
-        run: uv run ruff check .
+        run: uv run ruff check ./src
 
       - name: Run Ruff formatter
-        run: uv run ruff format .
+        run: uv run ruff format --check ./src
 
   test:
     runs-on: ubuntu-latest
