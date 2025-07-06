@@ -27,6 +27,9 @@ async def lifespan(app: FastAPI):
     await async_client_startup(app=app)
     await redis_startup(app=app)
 
+    await app.state.broker_client.send_tg_message("Pomodoro-time app started")
+    logger.info("App started!")
+
     yield
 
     await async_client_shutdown(app=app)
@@ -47,5 +50,3 @@ router.include_router(category_router)
 router.include_router(ping_router)
 
 app.include_router(router)
-
-logger.error("App started")
