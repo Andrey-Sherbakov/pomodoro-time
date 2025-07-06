@@ -48,4 +48,4 @@ router.include_router(ping_router)
 
 app.include_router(router)
 
-logger.info("App started")
+logger.error("App started")
