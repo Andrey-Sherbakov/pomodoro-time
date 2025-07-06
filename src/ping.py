@@ -11,8 +11,8 @@ async def ping_app() -> dict:
     return {"status": "ok", "component": "app"}
 
 
-@router.get("/db")
-async def ping_db(session: SessionDep) -> dict:
+@router.get("/database")
+async def ping_database(session: SessionDep) -> dict:
     try:
         await session.execute(text("SELECT 1"))
         return {"status": "ok", "component": "database"}
