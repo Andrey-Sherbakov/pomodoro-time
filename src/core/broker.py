@@ -71,6 +71,13 @@ class BrokerClient:
 
         await self._callback_queue.consume(handler)
 
+    async def ping(self):
+        if self._connection is None or self._connection.is_closed:
+            raise aio_pika.exceptions.AMQPConnectionError("Connection is not active")
+
+        if self._channel is None or self._channel.is_closed:
+            raise aio_pika.exceptions.AMQPConnectionError("Channel is not active")
+
     @staticmethod
     async def default_message_handler(message: AbstractIncomingMessage):
         async with message.process():

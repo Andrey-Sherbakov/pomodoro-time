@@ -34,6 +34,8 @@ def redis_cache_init() -> Redis:
         port=settings.REDIS_PORT,
         db=settings.REDIS_DB,
         decode_responses=True,
+        socket_connect_timeout=2,
+        socket_timeout=2,
     )
 
 
@@ -43,6 +45,8 @@ def redis_blacklist_init() -> Redis:
         port=settings.REDIS_PORT,
         db=settings.REDIS_BLACKLIST_DB,
         decode_responses=True,
+        socket_connect_timeout=2,
+        socket_timeout=2,
     )
 
 
